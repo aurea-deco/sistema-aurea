@@ -10,23 +10,23 @@ function procesarTexto() {
         return coincidencia ? coincidencia[2].trim() : ""; 
     };
 
-    // Ahora busca sin importar si le ponen tilde o no
     document.getElementById('nombre-cliente').innerText = buscarDato("Nombre|Cliente|Nombre y Apellido").toUpperCase();
     document.getElementById('dni').innerText = buscarDato("DNI|CUIT|Documento");
     document.getElementById('telefono').innerText = buscarDato("Celular|Teléfono|Telefono|Tel");
-   document.getElementById('provincia').innerText = buscarDato("Provincia").toUpperCase() || "BUENOS AIRES";
+    
+    // Provincia con valor por defecto "BUENOS AIRES"
+    document.getElementById('provincia').innerText = buscarDato("Provincia").toUpperCase() || "BUENOS AIRES";
+    
     document.getElementById('localidad').innerText = buscarDato("Localidad|Ciudad").toUpperCase();
     document.getElementById('cp').innerText = buscarDato("CP|Código Postal|Codigo Postal|Codigo");
     document.getElementById('calle').innerText = buscarDato("Calle|Dirección|Direccion").toUpperCase();
     document.getElementById('altura').innerText = buscarDato("Altura|Número|Numero").toUpperCase();
     
-    // Arreglo del problema del Envío
     const textoEnvio = buscarDato("Envío|Envio|Datos envío|Datos envio");
     document.getElementById('datos-envio').innerText = textoEnvio.toUpperCase();
 
     const tipoEnvio = textoEnvio.toLowerCase();
     document.getElementById('check-domicilio').checked = tipoEnvio.includes("domicilio");
-    // Si dice "sucursal" o "correo", marca la casilla de sucursal
     document.getElementById('check-sucursal').checked = tipoEnvio.includes("sucursal") || tipoEnvio.includes("correo");
 
     document.getElementById('nick').innerText = buscarDato("Nick|Usuario|Usuario IG").toUpperCase();
@@ -82,9 +82,12 @@ function guardarPedido() {
         return;
     }
 
-    const btn = document.querySelector('.btn-guardar');
-    btn.innerText = "⏳ Guardando...";
-    btn.disabled = true;
+    // ACÁ ESTABA EL ERROR: Ahora busca el botón correctamente sin importar cómo se llame su clase
+    const btn = document.querySelector('button[onclick="guardarPedido()"]');
+    if (btn) {
+        btn.innerText = "⏳ Guardando...";
+        btn.disabled = true;
+    }
 
     fetch(urlAppsScript, {
         method: 'POST',
@@ -94,19 +97,27 @@ function guardarPedido() {
     })
     .then(() => {
         alert("✅ Pedido ingresado a la planta.");
-        btn.innerText = "✔️ ¡Guardado!";
-        btn.style.backgroundColor = "#28a745";
+        if (btn) {
+            btn.innerText = "✔️ ¡Guardado!";
+            btn.style.backgroundColor = "#28a745";
+            btn.style.color = "white";
+        }
         
         setTimeout(() => {
             document.getElementById('texto-whatsapp').value = "";
-            btn.innerText = "💾 Ingresar a Producción";
-            btn.style.backgroundColor = "#007bff";
-            btn.disabled = false;
+            if (btn) {
+                btn.innerText = "💾 Guardar en Sistema";
+                btn.style.backgroundColor = "var(--antracita)";
+                btn.style.color = "var(--dorado)";
+                btn.disabled = false;
+            }
         }, 3000);
     })
     .catch(error => {
         alert("❌ Error de conexión.");
-        btn.innerText = "💾 Reintentar";
-        btn.disabled = false;
+        if (btn) {
+            btn.innerText = "💾 Reintentar";
+            btn.disabled = false;
+        }
     });
 }
