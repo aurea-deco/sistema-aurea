@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Monitor de Planta - Áurea</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+    <div class="header-sistema">
+        <img src="logo aurea.png" alt="Áurea Deco">
+    </div>
+    <h2>📊 Estado de Producción en Tiempo Real</h2>
+    <div id="cargando">Conectando...</div>
+    <table class="aurea-table" id="tabla-pedidos" style="display:none;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>CLIENTE</th>
+                <th>PEDIDO</th>
+                <th>ETAPA</th>
+                <th>TIEMPO</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpo-tabla"></tbody>
+    </table>
+    <script src="tablero.js"></script>
+</body>
+
+</html>

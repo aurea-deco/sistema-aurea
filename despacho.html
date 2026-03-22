@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despacho y Logística - Áurea</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .contenedor-tarjetas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tarjeta-despacho {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 360px;
+            border-top: 8px solid #0056b3;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .caja-envio {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #90caf9;
+        }
+
+        .caja-envio p {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #0d47a1;
+        }
+
+        .lista-pasos {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 15px 0;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .paso-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .paso-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #0056b3;
+        }
+
+        .paso-item.tachado {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .btn-correo {
+            background-color: #ffcc00;
+            color: #333;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-correo:hover {
+            background-color: #e6b800;
+        }
+
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: auto;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #1ebe57;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 style="text-align: center; margin-top: 30px; color: #0056b3;">📦 Logística y Despacho</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 30px;">Carteles terminados por el taller listos para
+        embalar y enviar.</p>
+
+    <div id="cargando" style="text-align: center; font-size: 18px;">Buscando pedidos a despachar... ⏳</div>
+
+    <div class="contenedor-tarjetas" id="contenedor-tarjetas"></div>
+
+    <script src="despacho.js"></script>
+</body>
+
+</html>

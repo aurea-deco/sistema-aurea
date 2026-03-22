@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap');
+
+:root {
+    --bg-natural: #fdfcf8;
+    --antracita: #1a1a1a;
+    --oxido: #8c5642;
+    --dorado: #d4af37;
+    --blanco: #ffffff;
+    --sombra: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-natural);
+    color: var(--antracita);
+    margin: 0;
+    padding: 0;
+}
+
+/* Header General */
+.header-sistema {
+    background-color: var(--antracita);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 6px solid var(--oxido);
+}
+
+.header-sistema img {
+    height: 80px;
+    object-fit: contain;
+}
+
+h2 {
+    font-weight: 800;
+    color: var(--oxido);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 30px;
+}
+
+/* Botones Áurea */
+.btn-aurea {
+    background-color: var(--dorado);
+    color: var(--antracita);
+    border: none;
+    padding: 14px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s ease;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-aurea:hover {
+    background-color: var(--oxido);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Ficha de Pedido (Mostrador) */
+.ficha-contenedor {
+    background: white;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 40px;
+    border: 1px solid #eee;
+    box-shadow: var(--sombra);
+}
+
+.bloque-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--antracita);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.logo-box h1 {
+    margin: 0;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 4px;
+}
+
+.titulo-seccion {
+    background: var(--antracita);
+    color: var(--dorado);
+    padding: 8px 15px;
+    font-weight: 800;
+    margin: 20px 0 10px 0;
+    font-size: 13px;
+}
+
+.contenido-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.fila {
+    border-bottom: 1px dotted #ccc;
+    padding: 8px 0;
+    font-size: 13px;
+}
+
+.completa {
+    grid-column: span 2;
+}
+
+.dato-llenar {
+    font-weight: 600;
+    color: var(--oxido);
+    text-transform: uppercase;
+}
+
+/* Tarjetas de Trabajo (Diseño, Taller, Ventas) */
+.contenedor-tarjetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tarjeta-aurea {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    width: 320px;
+    box-shadow: var(--sombra);
+    border-top: 8px solid var(--oxido);
+    display: flex;
+    flex-direction: column;
+}
+
+.caja-resaltada {
+    background: #f9f7f2;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--dorado);
+    margin: 15px 0;
+    font-family: monospace;
+}
+
+/* Tablero */
+.aurea-table {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--sombra);
+}
+
+.aurea-table th {
+    background: var(--antracita);
+    color: var(--dorado);
+    padding: 15px;
+    text-align: left;
+}
+
+.aurea-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+/* --- MAGIA PARA LOS BOTONES DE SUBIR ARCHIVOS --- */
+input[type="file"] {
+    background: #fdfcf8;
+    padding: 8px;
+    border: 1px dashed var(--oxido);
+    border-radius: 6px;
+    color: #555;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+input[type="file"]::file-selector-button {
+    background: var(--antracita);
+    color: var(--dorado);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: 0.3s;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: var(--oxido);
+    color: white;
+}
+
+/* --- TABLA PREMIUM PARA EL MONITOR --- */
+.aurea-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: var(--sombra);
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: white;
+}
+
+.aurea-table th {
+    background: var(--antracita);
+    color: var(--dorado);
+    padding: 18px;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border-bottom: 4px solid var(--oxido);
+}
+
+.aurea-table td {
+    padding: 18px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: var(--antracita);
+}
+
+.aurea-table tr:last-child td {
+    border-bottom: none;
+}
+
+.aurea-table tr:hover td {
+    background-color: #fcfbf9;
+}
+
+.etiqueta-estado {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+}
+/* --- CHECKLIST DE TALLER --- */
+.lista-pasos {
+    background: var(--gris-suave);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.paso-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--antracita);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.paso-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--dorado);
+    cursor: pointer;
+    margin: 0;
+}
+
+.paso-item.tachado {
+    color: #aaa;
+    text-decoration: line-through;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Taller CNC - Áurea</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+    <div class="header-sistema">
+        <img src="logo aurea.png" alt="Áurea Deco">
+    </div>
+
+    <h2>⚙️ ESTACIÓN DE TRABAJO CNC</h2>
+
+    <div
+        style="background: white; padding: 25px; border-radius: 15px; box-shadow: var(--sombra); margin: 0 auto 30px auto; max-width: 900px; border-top: 5px solid var(--dorado);">
+        <h3 style="margin-top:0; color: var(--antracita); text-transform: uppercase; font-size: 16px;">🗂️ Servidor de
+            G-Codes Semanales</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Archivos grupales (.tap / .nc) para descargar en
+            la PC de la máquina CNC.</p>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+            <input type="file" id="archivo-semanal" accept=".tap,.nc,.txt,.rar,.zip" style="margin: 0; flex: 1;">
+            <button id="btn-subir-semanal" onclick="subirGcodeSemanal()" class="btn-aurea">📤 Subir Archivo</button>
+        </div>
+
+        <div id="lista-gcodes-semanales"
+            style="display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto;">
+            <p style="color:#888; font-size:13px; text-align: center;">Cargando archivos en red...</p>
+        </div>
+    </div>
+
+    <div id="cargando" style="text-align:center; font-weight:bold; color:var(--oxido);">Buscando piezas a cortar... ⏳
+    </div>
+    <div class="contenedor-tarjetas" id="contenedor-tarjetas"></div>
+
+    <script src="taller.js"></script>
+</body>
+
+</html>
