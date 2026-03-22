@@ -20,13 +20,17 @@ body {
 /* Header General */
 .header-sistema {
     background-color: var(--antracita);
-    padding: 20px;
+    padding: 15px;
+    /* Reducimos el padding para ahorrar espacio */
     text-align: center;
     border-bottom: 6px solid var(--oxido);
 }
 
 .header-sistema img {
-    height: 80px;
+    /* Esta es la clave para que sea miniatura */
+    max-height: 50px;
+    /* Ajustá este número (50px es pequeño y prolijo) */
+    width: auto;
     object-fit: contain;
 }
 
