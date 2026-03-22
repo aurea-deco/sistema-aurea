@@ -1,4 +1,6 @@
+// ⚠️ PEGA TU LINK DE APPS SCRIPT ACÁ:
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec"; 
+
 // ==========================================
 // CALCULADORA DE URGENCIA (SEMÁFORO)
 // ==========================================
@@ -7,16 +9,28 @@ function obtenerSemaforo(fechaCruda) {
     try {
         const dias = Math.floor((new Date() - new Date(fechaCruda)) / (1000 * 3600 * 24));
         if (isNaN(dias)) return "";
-        let bg = "#28a745", color = "white"; // Verde por defecto (0 a 6 días)
-        if (dias >= 10) { bg = "#dc3545"; color = "white"; } // Rojo (10+ días)
-        else if (dias >= 7) { bg = "#ffc107"; color = "#333"; } // Amarillo (7 a 9 días)
+        let bg = "#28a745", color = "white"; 
+        if (dias >= 10) { bg = "#dc3545"; color = "white"; } 
+        else if (dias >= 7) { bg = "#ffc107"; color = "#333"; } 
         
         return `<span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⏳ ${dias} DÍAS</span>`;
     } catch(e) { return ""; }
 }
+
 function cargarDatosSeguros() {
-    fetch(urlAppsScript).then(res => res.json()).then(datos => renderizarTarjetas(datos));
-    fetch(urlAppsScript + "?accion=listar_gcodes").then(res => res.json()).then(datos => renderizarListaSemanales(datos.archivos));
+    const inputs = document.querySelectorAll('input[type="file"]');
+    const usandoArchivo = inputs.length > 0 && Array.from(inputs).some(input => input && input.files && input.files.length > 0);
+    
+    if (!usandoArchivo) {
+        // Carga las tarjetas
+        fetch(urlAppsScript).then(res => res.json()).then(datos => renderizarTarjetas(datos)).catch(e => console.log(e));
+        
+        // Carga la lista de G-Codes del servidor
+        fetch(urlAppsScript + "?accion=listar_gcodes")
+            .then(res => res.json())
+            .then(datos => renderizarListaSemanales(datos.archivos))
+            .catch(e => console.log(e));
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -29,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 function renderizarListaSemanales(archivos) {
     const div = document.getElementById("lista-gcodes-semanales");
+    if(!div) return;
     div.innerHTML = archivos ? archivos.map(a => `
         <div style="display:flex; justify-content:space-between; align-items:center; background:#f4f4f4; padding:10px 15px; margin-bottom:5px; border-radius:6px; border-left:3px solid var(--oxido);">
             <span style="color:var(--antracita); font-size:13px; font-weight:600;">📄 ${a.nombre}</span>
@@ -66,22 +81,32 @@ function renderizarTarjetas(pedidos) {
     document.getElementById("cargando").style.display = "none";
     const produccion = pedidos.filter(p => p.estado === "Listo para Corte CNC");
 
-    contenedor.innerHTML = produccion.length === 0 ? "<h3 style='color:#666;'>Sin pendientes en Taller</h3>" : "";
+    if (produccion.length === 0) {
+        contenedor.innerHTML = "<h3 style='color:#666;'>Sin pendientes en Taller</h3>";
+        return;
+    }
+    
+    contenedor.innerHTML = "";
     
     produccion.forEach(p => {
-        // Recuperar progreso (Checklist)
         let pasos = p.progreso ? p.progreso.split(',') : [];
         const isC = (paso) => pasos.includes(paso) ? 'checked' : '';
         const isT = (paso) => pasos.includes(paso) ? 'tachado' : '';
 
         const tarjeta = document.createElement("div");
         tarjeta.className = "tarjeta-aurea";
+        
+        // ACÁ ESTABA EL ERROR: Faltaba asignarle el ID a la tarjeta para que el botón la pueda encontrar
+        tarjeta.id = `tarjeta-${p.fila}`; 
+        
         tarjeta.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
-    <span class="id-pedido">${p.id}</span> 
-    ${obtenerSemaforo(p.fecha)}
-</div>
-            <h3 style="margin:0;">⚙️ Producción CNC</h3>
+                <span class="id-pedido">${p.id}</span> 
+                ${obtenerSemaforo(p.fecha)}
+            </div>
+            
+            <h3 style="margin:10px 0 5px 0;">⚙️ Producción CNC</h3>
+            
             <button class="btn-aurea" style="background:#007bff; color:white; margin:10px 0;" onclick="window.open('${p.linkDxf}', '_blank')">📥 Bajar DXF Original</button>
             
             <div class="bloque-info">
@@ -105,7 +130,7 @@ function renderizarTarjetas(pedidos) {
                 <label class="paso-item ${isT('armado')}"><input type="checkbox" value="armado" onchange="registrarPaso(${p.fila}, this)" ${isC('armado')}> 6. Armado</label>
             </div>
 
-            <button class="btn-aurea btn-secundario" onclick="finalizarPedido(${p.fila})">✅ PIEZA TERMINADA</button>
+            <button class="btn-aurea" id="btn-finalizar-${p.fila}" style="background-color:var(--dorado); color:var(--antracita); margin-top:10px;" onclick="finalizarPedido(${p.fila})">✅ PIEZA TERMINADA</button>
         `;
         contenedor.appendChild(tarjeta);
     });
@@ -122,7 +147,29 @@ function finalizarPedido(fila) {
         if (!confirm("⚠️ Faltan etapas por marcar. ¿Terminar cartel y mandar a Despacho igual?")) return;
     }
     
-    document.getElementById(`tarjeta-${fila}`).style.opacity = "0.5";
-    fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "marcar_terminado", fila: fila }) })
-    .then(() => location.reload());
+    // Bloqueamos el botón y avisamos que está cargando
+    const boton = document.getElementById(`btn-finalizar-${fila}`);
+    if(boton) { boton.innerText = "⏳ Guardando..."; boton.disabled = true; }
+    
+    // Hacemos transparente la tarjeta
+    const tarjeta = document.getElementById(`tarjeta-${fila}`);
+    if(tarjeta) tarjeta.style.opacity = "0.5";
+
+    // Enviamos a Google
+    fetch(urlAppsScript, { 
+        method: 'POST', 
+        mode: 'no-cors', 
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: "marcar_terminado", fila: fila }) 
+    })
+    .then(() => {
+        alert("✅ Cartel terminado y enviado a Despacho.");
+        location.reload(); // Recarga la página para refrescar los datos limpios
+    })
+    .catch((e) => {
+        console.error(e);
+        alert("❌ Error de conexión al intentar guardar.");
+        if(tarjeta) tarjeta.style.opacity = "1";
+        if(boton) { boton.innerText = "✅ PIEZA TERMINADA"; boton.disabled = false; }
+    });
 }
