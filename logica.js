@@ -14,7 +14,7 @@ function procesarTexto() {
     document.getElementById('nombre-cliente').innerText = buscarDato("Nombre|Cliente|Nombre y Apellido").toUpperCase();
     document.getElementById('dni').innerText = buscarDato("DNI|CUIT|Documento");
     document.getElementById('telefono').innerText = buscarDato("Celular|Teléfono|Telefono|Tel");
-    document.getElementById('provincia').innerText = buscarDato("Provincia").toUpperCase();
+   document.getElementById('provincia').innerText = buscarDato("Provincia").toUpperCase() || "BUENOS AIRES";
     document.getElementById('localidad').innerText = buscarDato("Localidad|Ciudad").toUpperCase();
     document.getElementById('cp').innerText = buscarDato("CP|Código Postal|Codigo Postal|Codigo");
     document.getElementById('calle').innerText = buscarDato("Calle|Dirección|Direccion").toUpperCase();
