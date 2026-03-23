@@ -99,19 +99,6 @@
             letter-spacing: 2px;
         }
 
-        .titulo-barra-vertical {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            transform: rotate(180deg);
-            background: #1a1a1a;
-            color: white;
-            padding: 15px 5px;
-            font-weight: 800;
-            letter-spacing: 3px;
-            font-size: 14px;
-            text-align: center;
-        }
-
         /* Filas y Campos tipo Formulario */
         .fila-dato {
             display: flex;
@@ -253,12 +240,26 @@
                 max-width: 100%;
             }
         }
+
+        /* Efecto Visual para todo lo que es Editable (Click y escribir) */
+        [contenteditable="true"] {
+            outline: none;
+            transition: background 0.2s;
+            cursor: text;
+        }
+
+        [contenteditable="true"]:hover,
+        [contenteditable="true"]:focus {
+            background-color: #f0f8ff;
+            /* Celestito para indicar que es editable */
+            border-bottom: 2px solid var(--dorado) !important;
+        }
     </style>
 </head>
 
 <body>
     <div class="panel-vendedor">
-        <h3 style="margin:0 0 10px 0;">Paso 1: Autocompletar Ficha</h3>
+        <h3 style="margin:0 0 10px 0;">Paso 1: Autocompletar Ficha (o hacer clic en la ficha para llenarla a mano)</h3>
         <textarea id="texto-whatsapp" rows="6" placeholder="Pegá acá el texto de WhatsApp o MercadoLibre..."></textarea>
         <div style="display:flex; gap:10px;">
             <button class="btn-aurea" onclick="procesarTexto()">⚡ Volcar Datos</button>
@@ -280,11 +281,11 @@
             <div class="header-fechas">
                 <div class="fecha-linea">
                     <strong>FECHA DE INGRESO:</strong>
-                    <span class="valor" id="fecha-ingreso"></span>
+                    <span class="valor" id="fecha-ingreso" contenteditable="true"></span>
                 </div>
                 <div class="fecha-linea">
                     <strong>FECHA DE ENVÍO:</strong>
-                    <span class="valor" id="fecha-envio"></span>
+                    <span class="valor" id="fecha-envio" contenteditable="true"></span>
                 </div>
             </div>
             <div class="header-titulo">
@@ -297,45 +298,55 @@
         <div class="fila-dato">
             <div class="campo" style="flex: 3;">
                 <strong>NOMBRE Y APELLIDO:</strong>
-                <span class="valor" id="nombre-cliente"></span>
+                <span class="valor" id="nombre-cliente" contenteditable="true"></span>
             </div>
             <div class="campo" style="flex: 1.5; justify-content: center; gap: 15px;">
-                <label style="font-size: 10px; font-weight:800; display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" id="check-domicilio" style="width:14px; margin:0;"> DOMICILIO
+                <label
+                    style="font-size: 10px; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer;">
+                    <input type="checkbox" id="check-domicilio" style="width:14px; margin:0; cursor:pointer;"> DOMICILIO
                 </label>
-                <label style="font-size: 10px; font-weight:800; display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" id="check-sucursal" style="width:14px; margin:0;"> SUCURSAL
+                <label
+                    style="font-size: 10px; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer;">
+                    <input type="checkbox" id="check-sucursal" style="width:14px; margin:0; cursor:pointer;"> SUCURSAL
                 </label>
             </div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 1;"><strong>PROVINCIA:</strong><span class="valor" id="provincia"></span>
+            <div class="campo" style="flex: 1;"><strong>PROVINCIA:</strong><span class="valor" id="provincia"
+                    contenteditable="true"></span>
             </div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 1;"><strong>LOCALIDAD:</strong><span class="valor" id="localidad"></span>
+            <div class="campo" style="flex: 1;"><strong>LOCALIDAD:</strong><span class="valor" id="localidad"
+                    contenteditable="true"></span>
             </div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 3;"><strong>CALLE:</strong><span class="valor" id="calle"></span></div>
-            <div class="campo" style="flex: 1;"><strong>ALTURA:</strong><span class="valor" id="altura"></span></div>
+            <div class="campo" style="flex: 3;"><strong>CALLE:</strong><span class="valor" id="calle"
+                    contenteditable="true"></span></div>
+            <div class="campo" style="flex: 1;"><strong>ALTURA:</strong><span class="valor" id="altura"
+                    contenteditable="true"></span></div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 1;"><strong>CÓDIGO POSTAL:</strong><span class="valor" id="cp"></span></div>
+            <div class="campo" style="flex: 1;"><strong>CÓDIGO POSTAL:</strong><span class="valor" id="cp"
+                    contenteditable="true"></span></div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 1;"><strong>TELÉFONO:</strong><span class="valor" id="telefono"></span>
+            <div class="campo" style="flex: 1;"><strong>TELÉFONO:</strong><span class="valor" id="telefono"
+                    contenteditable="true"></span>
             </div>
         </div>
 
         <div class="fila-dato">
-            <div class="campo" style="flex: 1;"><strong>DNI / CUIT:</strong><span class="valor" id="dni"></span></div>
-            <div class="campo" style="flex: 1;"><strong>ENVÍO:</strong><span class="valor" id="datos-envio"></span>
+            <div class="campo" style="flex: 1;"><strong>DNI / CUIT:</strong><span class="valor" id="dni"
+                    contenteditable="true"></span></div>
+            <div class="campo" style="flex: 1;"><strong>ENVÍO:</strong><span class="valor" id="datos-envio"
+                    contenteditable="true"></span>
             </div>
         </div>
 
@@ -344,29 +355,32 @@
             <div class="col-carteleria">
                 <div class="titulo-barra">CARTELERÍA</div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>NICK:</strong><span class="valor" id="nick"></span>
+                    <div class="campo" style="flex: 1;"><strong>NICK:</strong><span class="valor" id="nick"
+                            contenteditable="true"></span>
                     </div>
                 </div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>POSICIÓN:</strong><span class="valor"
-                            id="posicion"></span></div>
+                    <div class="campo" style="flex: 1;"><strong>POSICIÓN:</strong><span class="valor" id="posicion"
+                            contenteditable="true"></span></div>
                 </div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>MEDIDAS:</strong><span class="valor"
-                            id="medidas"></span></div>
+                    <div class="campo" style="flex: 1;"><strong>MEDIDAS:</strong><span class="valor" id="medidas"
+                            contenteditable="true"></span></div>
                 </div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>FONDO:</strong><span class="valor" id="fondo"></span>
+                    <div class="campo" style="flex: 1;"><strong>FONDO:</strong><span class="valor" id="fondo"
+                            contenteditable="true"></span>
                     </div>
                 </div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>FRENTE:</strong><span class="valor" id="frente"></span>
+                    <div class="campo" style="flex: 1;"><strong>FRENTE:</strong><span class="valor" id="frente"
+                            contenteditable="true"></span>
                     </div>
                 </div>
 
                 <div class="fila-dato" style="flex: 1; border-bottom: none; flex-direction: column; padding: 10px;">
                     <strong style="font-size: 10px; color:#444;">DATOS / TEXTO:</strong>
-                    <div id="datos-cartel"
+                    <div id="datos-cartel" contenteditable="true"
                         style="flex: 1; margin-top: 10px; font-family: monospace; font-size: 18px; font-weight: 800; border: none; text-transform: uppercase;">
                     </div>
                 </div>
@@ -375,7 +389,7 @@
             <div class="col-cajas">
                 <div class="caja-cuadrada">
                     <strong>MONTO A FACTURAR C/ENVÍO</strong>
-                    <div class="valor-caja" id="monto"></div>
+                    <div class="valor-caja" id="monto" contenteditable="true"></div>
                 </div>
                 <div class="caja-cuadrada">
                     <strong>MODELO A FABRICAR</strong>
@@ -384,13 +398,15 @@
                 </div>
                 <div class="caja-notas">
                     <strong>NOTAS</strong>
+                    <div contenteditable="true" style="margin-top: 25px; height: 100%; outline: none; font-size: 13px;">
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
 
-<script src="logica.js?v=2"></script>
+    <script src="logica.js?v=2"></script>
 </body>
 
 </html>
