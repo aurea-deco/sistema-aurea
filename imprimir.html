@@ -405,7 +405,16 @@
                     <div class="caja-cuadrada"><strong>MODELO CONFIRMADO</strong>
                         <div class="valor-caja" id="f-modelo" style="color:#007bff;"></div>
                     </div>
-                    <div class="caja-notas"><strong>ESTADO ACTUAL:</strong><br><br><span id="f-estado"
+                
+                    <div class="caja-cuadrada" style="background: #f0f8ff;">
+                        <strong>SEGUIMIENTO DE ENVÍO</strong>
+                        <div class="valor-caja" id="f-tracking" style="color:#0056b3; font-size:16px; margin-top:5px;">S/D</div>
+                        <a href="https://www.correoargentino.com.ar/formularios/e-commerce" target="_blank"
+                            style="font-size:10px; color:#444; font-weight:bold; text-decoration:none; margin-top:5px;">🔗 Rastrear
+                            Paquete</a>
+                    </div>
+                
+                    <div class="caja-notas" style="min-height: 80px;"><strong>ESTADO ACTUAL:</strong><br><br><span id="f-estado"
                             style="font-weight: bold; color: var(--oxido);"></span></div>
                 </div>
             </div>
@@ -470,6 +479,16 @@
             document.getElementById("f-monto").innerText = p.monto || "S/D";
             document.getElementById("f-modelo").innerText = p.modelo || "A definir";
             document.getElementById("f-estado").innerText = p.estado;
+            // EL TRUCO NINJA: Rescatar el código de seguimiento del progreso
+            let tracking = "Sin Seguimiento";
+            if (p.progreso && p.progreso.includes("TRACKING_")) {
+                const partes = p.progreso.split(',');
+                const trackPart = partes.find(part => part.startsWith("TRACKING_"));
+                if (trackPart) {
+                    tracking = trackPart.replace("TRACKING_", "");
+                }
+            }
+            document.getElementById("f-tracking").innerText = tracking;
         }
     </script>
 </body>
