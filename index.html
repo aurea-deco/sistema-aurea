@@ -259,14 +259,14 @@
 
 <body>
     <div class="panel-vendedor">
-        <h3 style="margin:0 0 10px 0;">Paso 1: Autocompletar Ficha (o hacer clic en la ficha para llenarla a mano)</h3>
+        <h3 style="margin:0 0 10px 0;"> Autocompletar pedido (o hacer clic en cada dato para rellenarlo manualmente)</h3>
         <textarea id="texto-whatsapp" rows="6" placeholder="Pegá acá el texto de WhatsApp o MercadoLibre..."></textarea>
         <div style="display:flex; gap:10px;">
-            <button class="btn-aurea" onclick="procesarTexto()">⚡ Volcar Datos</button>
+            <button class="btn-aurea" onclick="procesarTexto()">⚡ autocompletar ficha</button>
             <button class="btn-aurea" style="background:var(--antracita); color:var(--dorado);"
-                onclick="guardarPedido()">💾 Guardar en Sistema</button>
+                onclick="guardarPedido()">💾 subir pedido</button>
             <button class="btn-aurea" style="background:#eee; color:#333; margin-left: auto;"
-                onclick="window.print()">🖨️ Imprimir Papel</button>
+                onclick="window.print()">🖨️ Imprimir ficha (opcional)</button>
         </div>
     </div>
 
@@ -345,19 +345,15 @@
         <div class="fila-dato">
             <div class="campo" style="flex: 1;"><strong>DNI / CUIT:</strong><span class="valor" id="dni"
                     contenteditable="true"></span></div>
-            <div class="campo" style="flex: 1;"><strong>ENVÍO:</strong><span class="valor" id="datos-envio"
-                    contenteditable="true"></span>
-            </div>
+            <span class="valor" id="datos-envio"contenteditable="true"></span>
         </div>
 
         <div class="zona-inferior">
 
             <div class="col-carteleria">
-                <div class="titulo-barra">CARTELERÍA</div>
+                <div class="titulo-barra">DATOS DEL CARTEL</div>
                 <div class="fila-dato">
-                    <div class="campo" style="flex: 1;"><strong>NICK:</strong><span class="valor" id="nick"
-                            contenteditable="true"></span>
-                    </div>
+                    <span class="valor" id="nick"contenteditable="true"></span>
                 </div>
                 <div class="fila-dato">
                     <div class="campo" style="flex: 1;"><strong>POSICIÓN:</strong><span class="valor" id="posicion"

@@ -68,10 +68,10 @@ function renderizarTarjetas(pedidos) {
             </div>
 
             <div class="lista-pasos" id="lista-pasos-despacho-${p.fila}" style="margin-bottom:15px;">
-                <strong style="font-size:11px; color:#0056b3; margin-bottom:5px; display:block;">CONTROL DE EMPAQUE:</strong>
-                <label class="paso-item ${isT('calidad')}"><input type="checkbox" value="calidad" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('calidad')}> 1. Control Calidad OK</label>
-                <label class="paso-item ${isT('embalaje')}"><input type="checkbox" value="embalaje" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('embalaje')}> 2. Embalaje Protegido</label>
-                <label class="paso-item ${isT('etiqueta')}"><input type="checkbox" value="etiqueta" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('etiqueta')}> 3. Etiqueta Pegada</label>
+                <strong style="font-size:11px; color:#0056b3; margin-bottom:5px; display:block;">CONTROL DE EMBALAJE:</strong>
+                <label class="paso-item ${isT('calidad')}"><input type="checkbox" value="calidad" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('calidad')}> 1. Controlar Datos</label>
+                <label class="paso-item ${isT('embalaje')}"><input type="checkbox" value="embalaje" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('embalaje')}> 2. Embalado con Punteras</label>
+                <label class="paso-item ${isT('etiqueta')}"><input type="checkbox" value="etiqueta" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('etiqueta')}> 3. Etiqueta Pegada y Controlada</label>
             </div>
             
             <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf,.jpg,.png" style="margin-top:5px;">

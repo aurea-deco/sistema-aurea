@@ -3,97 +3,107 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Áurea Deco</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="estilos.css">
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
-        body {
-            background-color: var(--antracita);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
         .grid-portal {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: auto;
-            padding: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        .card-acceso {
+        .btn-portal {
             background: white;
-            padding: 40px 20px;
-            border-radius: 20px;
+            border-radius: 12px;
+            padding: 30px 20px;
             text-decoration: none;
-            text-align: center;
-            border-bottom: 6px solid var(--dorado);
-            transition: 0.3s;
-        }
-
-        .card-acceso:hover {
-            transform: translateY(-10px);
-            border-bottom-color: var(--oxido);
-        }
-
-        .card-acceso h3 {
             color: var(--antracita);
-            margin: 0;
-            font-weight: 800;
-            font-size: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-top: 6px solid var(--dorado);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
-        .card-acceso p {
-            color: #888;
+        .btn-portal:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+            background-color: #fffdf9;
+        }
+
+        .btn-portal h3 {
+            margin: 15px 0 8px 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .btn-portal p {
+            margin: 0;
+            color: #777;
             font-size: 13px;
-            margin-top: 10px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .icon-btn {
+            font-size: 40px;
         }
     </style>
 </head>
 
 <body>
     <div class="header-sistema">
-        <img src="logo aurea.png" alt="Áurea Deco">
+        <img src="logo aurea.png" alt="Áurea Deco" style="max-height: 80px; width: auto; object-fit: contain;">
     </div>
+
     <div class="grid-portal">
-        <a href="index.html" class="card-acceso">
-            <h3>MESA DE ENTRADA</h3>
-            <p>Ingreso de Pedidos</p>
+        <a href="index.html" class="btn-portal" style="border-top-color: #333;">
+            <span class="icon-btn">📝</span>
+            <h3>1. ENTRADA</h3>
+            <p>Ingreso y edición de pedidos</p>
         </a>
-        <a href="pendientes.html" class="card-acceso">
-            <h3>MODELOS PDF</h3>
-            <p>Confirmaciones</p>
+        <a href="disenador.html" class="btn-portal" style="border-top-color: #007bff;">
+            <span class="icon-btn">🎨</span>
+            <h3>2. DISEÑO</h3>
+            <p>PDF & DXF</p>
         </a>
-        <a href="disenador.html" class="card-acceso">
-            <h3>DISEÑO</h3>
-            <p>Bocetos y DXF</p>
+        <a href="pendientes.html" class="btn-portal" style="border-top-color: #28a745;">
+            <span class="icon-btn">💬</span>
+            <h3>3. CONFIRMACIONES</h3>
+            <p>WhatsApp y PDF</p>
         </a>
-        <a href="taller.html" class="card-acceso">
-            <h3>PRODUCCIÓN</h3>
-            <p>Fabricación de piezas</p>
+        <a href="taller.html" class="btn-portal" style="border-top-color: #dc3545;">
+            <span class="icon-btn">⚙️</span>
+            <h3>4. FÁBRICA</h3>
+            <p>Producción, Pintura y Armado</p>
         </a>
-        <a href="despacho.html" class="card-acceso">
-            <h3>📦 CORREO</h3>
-            <p>Logística</p>
+        <a href="despacho.html" class="btn-portal" style="border-top-color: #17a2b8;">
+            <span class="icon-btn">📦</span>
+            <h3>5. DESPACHO</h3>
+            <p>Mi Correo y Envíos</p>
         </a>
-        <a href="tablero.html" class="card-acceso">
-            <h3>📊 MONITOR</h3>
-            <p>Estado Global</p>
+        <a href="stock.html" class="btn-portal" style="border-top-color: #8c5642;">
+            <span class="icon-btn">🛠️</span>
+            <h3>INSUMOS</h3>
+            <p>Chapas, Insumos y Embalaje</p>
         </a>
-    </div>
-    <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-        <a href="imprimir.html" class="btn-aurea" style="
-                text-decoration: none; 
-                background: transparent; 
-                color: var(--antracita); 
-                padding: 8px 15px; 
-                border: 2px solid var(--antracita); 
-                font-size: 12px; 
-                box-shadow: none;
-            ">
-            🗂️ ARCHIVO DE IMPRESIÓN
+        <a href="imprimir.html" class="btn-portal" style="border-top-color: var(--dorado);">
+            <span class="icon-btn">🗂️</span>
+            <h3>ARCHIVO</h3>
+            <p>Reimpresión de Fichas</p>
+        </a>
+        <a href="tablero.html" class="btn-portal" style="border-top-color: #6f42c1;">
+            <span class="icon-btn">📊</span>
+            <h3>MONITOR</h3>
+            <p>Estado general de planta</p>
         </a>
     </div>
 </body>

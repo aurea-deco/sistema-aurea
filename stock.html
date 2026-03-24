@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pañol y Stock - Áurea Deco</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        /* --- ESTILOS BASE --- */
+        body {
+            background: #fdfcf8;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1a1a1a;
+        }
+
+        .header-sistema {
+            background-color: #1a1a1a;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 6px solid #8c5642;
+        }
+
+        .header-sistema img {
+            max-height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .contenedor {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* --- LAS BARRAS NEGRAS --- */
+        .titulo-barra {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- GRILLA Y TARJETAS --- */
+        .grid-stock {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .tarjeta-stock {
+            background: white;
+            border: 2px solid #eee;
+            border-top: 6px solid #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+        }
+
+        .tarjeta-stock:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tarjeta-stock.alerta {
+            border-top-color: #dc3545;
+            background-color: #fff5f5;
+            border-color: #ffcccc;
+        }
+
+        .item-nombre {
+            font-size: 16px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 20px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+
+        /* --- BOTONES Y NÚMEROS --- */
+        .controles {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .btn-stock {
+            background: #1a1a1a;
+            color: #d4af37;
+            border: none;
+            width: 45px;
+            height: 45px;
+            font-size: 26px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .btn-stock:active {
+            transform: scale(0.9);
+        }
+
+        .btn-stock.restar {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-stock.restar:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .cantidad {
+            font-size: 30px;
+            font-weight: 900;
+            width: 60px;
+            color: #8c5642;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-sistema">
+        <img src="logo aurea.png" alt="Áurea Deco">
+    </div>
+
+    <div class="contenedor">
+        <h2 style="text-align: center; font-weight: 800; letter-spacing: 1px;">📦 CONTROL DE STOCK</h2>
+
+        <div id="cargando"
+            style="text-align: center; color: #888; font-weight: bold; margin-top: 30px; font-size: 18px;">
+            Conectando con el almacén... ⏳
+        </div>
+
+        <div id="app-stock" style="display: none;">
+            <div class="titulo-barra">⚙️ INSUMOS DE TALLER Y CORTE</div>
+            <div class="grid-stock" id="grid-taller"></div>
+
+            <div class="titulo-barra">📦 EMBALAJE Y PROTECCIÓN</div>
+            <div class="grid-stock" id="grid-embalaje"></div>
+
+            <div class="titulo-barra">🏷️ ACCESORIOS Y ETIQUETAS</div>
+            <div class="grid-stock" id="grid-accesorios"></div>
+        </div>
+    </div>
+
+    <script>
+        // TU LINK CORRECTO Y VERIFICADO:
+        const urlAppsScript = "https://script.google.com/macros/s/AKfycby6Zk9itMKp09cmOdEkVv0fW0dZRWL0p0IyEiP7gjibIGzYx7q8lHTgQU9ZkLr8532C9w/exec";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // EL TRUCO: credentials: 'omit' simula el modo incógnito
+            fetch(urlAppsScript + "?accion=leer_stock", {
+                method: 'GET',
+                redirect: 'follow',
+                credentials: 'omit'
+            })
+                .then(res => res.json())
+                .then(datos => {
+                    document.getElementById("cargando").style.display = "none";
+                    document.getElementById("app-stock").style.display = "block";
+                    renderizarStock(datos.stock || []);
+                })
+                .catch(e => {
+                    console.error("Detalle del error:", e);
+                    document.getElementById("cargando").innerHTML = "❌ Bloqueo de Google detectado. Apretá Ctrl + F5.";
+                });
+        });
+
+        function renderizarStock(items) {
+            const gridTaller = document.getElementById("grid-taller");
+            const gridEmbalaje = document.getElementById("grid-embalaje");
+            const gridAccesorios = document.getElementById("grid-accesorios");
+
+            const catTaller = ["chapa", "electrodo", "nozzle", "pico", "disco", "flap"];
+            const catEmbalaje = ["caja", "burbuja", "cinta", "film", "puntera"];
+
+            items.forEach(item => {
+                let nombreItem = String(item.item || "").trim();
+
+                if (nombreItem === "" || nombreItem.toLowerCase() === "item" || nombreItem.toLowerCase() === "cantidad") return;
+
+                let cant = parseInt(item.cantidad) || 0;
+                let alerta = cant <= 3 ? "alerta" : "";
+                let nombreLimpio = nombreItem.toLowerCase();
+
+                let tarjeta = `
+                        <div class="tarjeta-stock ${alerta}">
+                            <div class="item-nombre">${nombreItem}</div>
+                            <div class="controles">
+                                <button class="btn-stock restar" onclick="actualizar(${item.fila}, -1, this)">-</button>
+                                <div class="cantidad">${cant}</div>
+                                <button class="btn-stock" onclick="actualizar(${item.fila}, 1, this)">+</button>
+                            </div>
+                        </div>
+                    `;
+
+                if (catTaller.some(c => nombreLimpio.includes(c))) {
+                    gridTaller.innerHTML += tarjeta;
+                } else if (catEmbalaje.some(c => nombreLimpio.includes(c))) {
+                    gridEmbalaje.innerHTML += tarjeta;
+                } else {
+                    gridAccesorios.innerHTML += tarjeta;
+                }
+            });
+        }
+
+        function actualizar(fila, cambio, boton) {
+            let divCant = boton.parentElement.querySelector('.cantidad');
+            let nuevaCant = parseInt(divCant.innerText) + cambio;
+            if (nuevaCant < 0) nuevaCant = 0;
+
+            divCant.innerText = "⏳";
+
+            // ACÁ TAMBIÉN AGREGAMOS EL BLINDAJE PARA PODER GUARDAR SIN ERROR
+            fetch(urlAppsScript, {
+                method: 'POST',
+                mode: 'no-cors',
+                credentials: 'omit',
+                body: JSON.stringify({ accion: "actualizar_stock", fila: fila, cantidad: nuevaCant })
+            }).then(() => {
+                divCant.innerText = nuevaCant;
+                let tarjeta = divCant.closest('.tarjeta-stock');
+                if (nuevaCant <= 3) tarjeta.classList.add('alerta');
+                else tarjeta.classList.remove('alerta');
+            });
+        }
+    </script>
+</body>
+
+</html>

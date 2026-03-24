@@ -82,7 +82,7 @@ function renderizarTarjetas(pedidos) {
     const produccion = pedidos.filter(p => p.estado === "Listo para Corte CNC");
 
     if (produccion.length === 0) {
-        contenedor.innerHTML = "<h3 style='color:#666;'>Sin pendientes en Taller</h3>";
+        contenedor.innerHTML = "<h3 style='color:#666;'>Sin pendientes en Fábrica</h3>";
         return;
     }
     
@@ -105,24 +105,24 @@ function renderizarTarjetas(pedidos) {
                 ${obtenerSemaforo(p.fecha)}
             </div>
             
-            <h3 style="margin:10px 0 5px 0;">⚙️ Producción CNC</h3>
+            <h3 style="margin:10px 0 5px 0;">⚙️ Fabricación</h3>
             
-            <button class="btn-aurea" style="background:#007bff; color:white; margin:10px 0;" onclick="window.open('${p.linkDxf}', '_blank')">📥 Bajar DXF Original</button>
+            <button class="btn-aurea" style="background:#007bff; color:white; margin:10px 0;" onclick="window.open('${p.linkDxf}', '_blank')">📥 Bajar Dxf (opcional)</button>
             
             <div class="bloque-info">
-                <strong>HOJA DE RUTA</strong>
+                <strong>HOJA DE RUTA</strong><br>
                 Medida: ${p.medida}<br>
                 Texto: <strong style="display:inline; color:var(--antracita); font-size:14px;">"${p.textos}"</strong>
             </div>
             
             <div class="bloque-info" style="border-color: var(--antracita); margin-top:0;">
-                <strong>PINTURA</strong>
+                <strong>PINTURA</strong><br>
                 Frente: ${p.frente} / Fondo: ${p.fondo}
             </div>
 
             <div class="lista-pasos" id="lista-pasos-${p.fila}">
                 <strong style="font-size:11px; color:var(--oxido); margin-bottom:5px; display:block;">PROGRESO EN PLANTA:</strong>
-                <label class="paso-item ${isT('corte')}"><input type="checkbox" value="corte" onchange="registrarPaso(${p.fila}, this)" ${isC('corte')}> 1. Corte CNC</label>
+                <label class="paso-item ${isT('corte')}"><input type="checkbox" value="corte" onchange="registrarPaso(${p.fila}, this)" ${isC('corte')}> 1. Cortado </label>
                 <label class="paso-item ${isT('pulido')}"><input type="checkbox" value="pulido" onchange="registrarPaso(${p.fila}, this)" ${isC('pulido')}> 2. Pulido</label>
                 <label class="paso-item ${isT('plegado')}"><input type="checkbox" value="plegado" onchange="registrarPaso(${p.fila}, this)" ${isC('plegado')}> 3. Plegado</label>
                 <label class="paso-item ${isT('cepillado')}"><input type="checkbox" value="cepillado" onchange="registrarPaso(${p.fila}, this)" ${isC('cepillado')}> 4. Cepillado</label>
@@ -130,7 +130,7 @@ function renderizarTarjetas(pedidos) {
                 <label class="paso-item ${isT('armado')}"><input type="checkbox" value="armado" onchange="registrarPaso(${p.fila}, this)" ${isC('armado')}> 6. Armado</label>
             </div>
 
-            <button class="btn-aurea" id="btn-finalizar-${p.fila}" style="background-color:var(--dorado); color:var(--antracita); margin-top:10px;" onclick="finalizarPedido(${p.fila})">✅ PIEZA TERMINADA</button>
+            <button class="btn-aurea" id="btn-finalizar-${p.fila}" style="background-color:var(--dorado); color:var(--antracita); margin-top:10px;" onclick="finalizarPedido(${p.fila})">✅ Cartel Terminado</button>
         `;
         contenedor.appendChild(tarjeta);
     });

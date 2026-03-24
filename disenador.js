@@ -55,7 +55,7 @@ function renderizarTarjetas(pedidos) {
             </div>
             
             <input type="file" id="archivo-pdf-${p.fila}" accept=".pdf,.jpg">
-            <button class="btn-aurea" style="width:100%;" onclick="procesarYSubirArchivo(${p.fila}, 'pdf')">📤 SUBIR BOCETO (PDF)</button>
+            <button class="btn-aurea" style="width:100%;" onclick="procesarYSubirArchivo(${p.fila}, 'pdf')">📤 SUBIR DISEÑOS (PDF)</button>
         `;
         contNuevos.appendChild(tarjeta);
     });
@@ -71,16 +71,16 @@ function renderizarTarjetas(pedidos) {
                 <span class="id-pedido">${p.id}</span>
                 ${obtenerSemaforo(p.fecha)}
             </div>
-            <h3 style="margin:10px 0; color:#007bff;">📐 MOD: ${p.modelo}</h3>
+            <h3 style="margin:10px 0; color:#007bff;">📐 Modelo: ${p.modelo}</h3>
             
             <div class="caja-resaltada" style="background:#f0f8ff; border-color:#007bff;">
-                <strong style="font-size:11px; color:#007bff; display:block; margin-bottom:5px;">PUENTEAR TEXTOS:</strong>
+                <strong style="font-size:11px; color:#007bff; display:block; margin-bottom:5px;">DATOS:</strong>
                 ${p.textos}
             </div>
             <p style="font-size:13px;"><strong>Medida chapa:</strong> ${p.medida}</p>
             
             <input type="file" id="archivo-dxf-${p.fila}" accept=".dxf">
-            <button class="btn-aurea" style="width:100%; background:#007bff; color:white;" onclick="procesarYSubirArchivo(${p.fila}, 'dxf')">✅ ENVIAR A TALLER (DXF)</button>
+            <button class="btn-aurea" style="width:100%; background:#007bff; color:white;" onclick="procesarYSubirArchivo(${p.fila}, 'dxf')">✅ ENVIAR A PRODUCCIÓN (DXF)</button>
         `;
         contDxf.appendChild(tarjeta);
     });
