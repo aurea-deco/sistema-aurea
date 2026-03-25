@@ -295,86 +295,209 @@ function cerrarDetalle() {
     }
 }
 // ==========================================
-// GENERADOR DE HOJA DE RUTA (FICHA DE PRODUCCIÓN)
+// GENERADOR DE FICHA DE INGRESO (ORDEN DE TRABAJO EXACTA)
 // ==========================================
 function imprimirFicha(idBuscado) {
     const p = pedidosGlobales.find(pedido => pedido.id === idBuscado);
     if (!p) return;
 
-    // Abre una pestaña nueva invisible
+    // Formato de fecha YYYY-MM-DD igual al de tu imagen
+    let fechaIngreso = "S/D";
+    if(p.fecha) {
+        try { 
+            const d = new Date(p.fecha);
+            fechaIngreso = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+        } catch(e){}
+    }
+
+    // Si el modelo ya dice "OPCIÓN", lo dejamos, sino se lo agregamos
+    let textoModelo = 'S/D';
+    if(p.modelo) {
+        textoModelo = String(p.modelo).toUpperCase().includes('OPCIÓN') ? p.modelo : 'OPCIÓN ' + p.modelo;
+    }
+
     const ventana = window.open('', '_blank');
     
-    // Plantilla HTML optimizada para impresoras (Blanco, Negro y grises)
     const plantilla = `
-        <html>
+        <!DOCTYPE html>
+        <html lang="es">
         <head>
-            <title>Ficha Producción - ${p.id}</title>
+            <meta charset="UTF-8">
+            <title>Ficha - ${p.id}</title>
             <style>
-                body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; margin: 0; }
-                .contenedor { max-width: 800px; margin: 0 auto; border: 2px solid #000; padding: 20px; }
-                .cabecera { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                .cabecera h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
-                .cabecera h2 { margin: 5px 0 0 0; font-size: 32px; font-family: monospace; }
-                .seccion { border: 1px solid #000; margin-bottom: 15px; border-radius: 4px; overflow: hidden; }
-                .titulo-seccion { background: #e0e0e0; font-weight: bold; padding: 8px 15px; border-bottom: 1px solid #000; font-size: 14px; text-transform: uppercase; }
-                .contenido-seccion { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
-                .fila-completa { grid-column: span 2; }
-                .caja-textos { margin: 20px; padding: 20px; border: 3px dashed #000; text-align: center; }
-                .caja-textos strong { display: block; margin-bottom: 10px; font-size: 12px; text-transform: uppercase; color: #555; }
-                .caja-textos span { font-family: monospace; font-size: 28px; font-weight: bold; text-transform: uppercase; }
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+                
+                body { font-family: 'Montserrat', 'Arial', sans-serif; margin: 0; padding: 40px; color: #000; background: #fff; }
+                .hoja { max-width: 800px; margin: 0 auto; }
+                
+                /* HEADER */
+                .grid-header { display: grid; grid-template-columns: 25% 45% 30%; border: 4px solid #1a1a1a; }
+                .logo-caja { padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                
+                /* Logo dibujado en CSS para evitar que se rompa al imprimir */
+                .circulo-logo { width: 100px; height: 100px; background: #8c5642; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; margin-bottom: 5px; border: 1px solid #fff; box-shadow: 0 0 0 1px #8c5642;}
+                .circulo-logo .aurea { font-family: 'Georgia', serif; font-size: 24px; margin-bottom: 2px; }
+                .circulo-logo .obj { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; }
+                .logo-texto-abajo { font-size: 10px; font-weight: 900; text-transform: uppercase; margin-top: 5px; }
+                
+                .datos-header { border-left: 4px solid #1a1a1a; border-right: 4px solid #1a1a1a; padding: 20px 25px; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+                .dato-h { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                .dato-h .lbl { font-size: 11px; font-weight: 900; }
+                .dato-h .val-id { font-size: 20px; font-weight: 900; color: #a04000; } 
+                .dato-h .val-fec { font-size: 16px; font-weight: 900; }
+                
+                .titulo-header { background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; text-align: center; line-height: 1.2; padding: 20px; }
+
+                /* TITULOS SECCION */
+                .titulo-seccion { background: #1a1a1a; color: #fff; padding: 8px 15px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #1a1a1a; border-right: 4px solid #1a1a1a; margin-top: -4px;}
+
+                /* SECCION CLIENTE */
+                .seccion-cliente { border: 4px solid #1a1a1a; border-top: none; }
+                .fila { border-bottom: 1px solid #666; padding: 10px 15px; display: flex; align-items: baseline; }
+                .fila:last-child { border-bottom: none; }
+                .fila.split { display: grid; grid-template-columns: 1fr 1fr; padding: 0; }
+                .split > div { padding: 10px 15px; display: flex; align-items: baseline; }
+                .split > div:first-child { border-right: 1px solid #666; }
+                
+                .lbl { font-size: 11px; font-weight: 900; margin-right: 10px; flex-shrink: 0; text-transform: uppercase; }
+                .val { font-size: 15px; font-weight: 900; text-transform: uppercase; }
+
+                /* FOOTER GRID (Carteleria + Montos) */
+                .grid-footer { display: grid; grid-template-columns: 60% 40%; border: 4px solid #1a1a1a; border-top: none; }
+                .col-izq { border-right: 4px solid #1a1a1a; }
+                .fila-cart { border-bottom: 1px solid #666; padding: 10px 15px; display: flex; align-items: baseline; }
+                .fila-cart .lbl { width: 85px; }
+                .caja-texto { padding: 15px; }
+                .caja-texto .lbl { margin-bottom: 15px; display: block; font-size: 12px;}
+                .caja-texto .val-texto { font-size: 24px; font-family: monospace; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+                
+                .col-der { display: flex; flex-direction: column; }
+                .caja-der { border-bottom: 4px solid #1a1a1a; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+                .caja-der:last-child { border-bottom: none; background: #f4f6f9; }
+                .caja-der .lbl-der { font-size: 11px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; }
+                .val-monto { font-size: 26px; font-weight: 900; }
+                .val-modelo { font-size: 28px; font-weight: 900; color: #007bff; text-transform: uppercase; }
+                .val-seg { font-size: 16px; font-weight: 900; color: #0056b3; }
+                
                 @media print {
-                    body { -webkit-print-color-adjust: exact; }
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+                    .hoja { margin: 0; }
                 }
             </style>
         </head>
         <body>
-            <div class="contenedor">
-                <div class="cabecera">
-                    <h1>ÁUREA DECO - ORDEN DE TRABAJO</h1>
-                    <h2>${p.id}</h2>
-                </div>
-
-                <div class="seccion">
-                    <div class="titulo-seccion">👤 Cliente y Logística</div>
-                    <div class="contenido-seccion">
-                        <div><strong>Nombre:</strong> ${p.nombre}</div>
-                        <div><strong>Celular:</strong> ${p.celular}</div>
-                        <div><strong>DNI:</strong> ${p.dni || '-'}</div>
-                        <div><strong>Método:</strong> ${p.tipoEnvio || '-'}</div>
-                        <div class="fila-completa"><strong>Destino:</strong> ${p.localidad}, ${p.provincia} (CP: ${p.cp || '-'})</div>
-                        <div class="fila-completa"><strong>Dirección Física:</strong> ${p.direccion}</div>
+            <div class="hoja">
+                <div class="grid-header">
+                    <div class="logo-caja">
+                        <div class="circulo-logo">
+                            <div class="aurea">ÁUREA</div>
+                            <div class="obj">objetos de diseño</div>
+                        </div>
+                        <div class="logo-texto-abajo">objetos de diseño</div>
+                    </div>
+                    <div class="datos-header">
+                        <div class="dato-h">
+                            <span class="lbl">ID PEDIDO:</span>
+                            <span class="val-id">${p.id}</span>
+                        </div>
+                        <div class="dato-h">
+                            <span class="lbl">FECHA DE INGRESO:</span>
+                            <span class="val-fec">${fechaIngreso}</span>
+                        </div>
+                    </div>
+                    <div class="titulo-header">
+                        FICHA DE<br>PEDIDO
                     </div>
                 </div>
 
-                <div class="seccion">
-                    <div class="titulo-seccion">⚙️ Fabricación y Pintura</div>
-                    <div class="contenido-seccion">
-                        <div><strong>Medida:</strong> ${p.medida} (${p.posicion})</div>
-                        <div><strong>Opción Elegida:</strong> ${p.modelo || 'Pendiente'}</div>
-                        <div><strong>Color Frente:</strong> ${p.frente}</div>
-                        <div><strong>Color Fondo:</strong> ${p.fondo}</div>
+                <div class="titulo-seccion">DATOS DEL CLIENTE</div>
+                <div class="seccion-cliente">
+                    <div class="fila">
+                        <span class="lbl">NOMBRE Y APELLIDO:</span>
+                        <span class="val">${p.nombre}</span>
+                    </div>
+                    <div class="fila">
+                        <span class="lbl">PROVINCIA:</span>
+                        <span class="val">${p.provincia}</span>
+                    </div>
+                    <div class="fila">
+                        <span class="lbl">LOCALIDAD:</span>
+                        <span class="val">${p.localidad}</span>
+                    </div>
+                    <div class="fila">
+                        <span class="lbl">DIRECCIÓN:</span>
+                        <span class="val">${p.direccion}</span>
+                    </div>
+                    <div class="fila">
+                        <span class="lbl">CÓDIGO POSTAL:</span>
+                        <span class="val">${p.cp || ' - '}</span>
+                    </div>
+                    <div class="fila">
+                        <span class="lbl">TELÉFONO:</span>
+                        <span class="val">${p.celular}</span>
+                    </div>
+                    <div class="fila split">
+                        <div>
+                            <span class="lbl">DNI / CUIT:</span>
+                            <span class="val">${p.dni || ' - '}</span>
+                        </div>
+                        <div>
+                            <span class="lbl" style="width: 50px;">ENVÍO:</span>
+                            <span class="val">${p.tipoEnvio || ' - '}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="titulo-seccion">CARTELERÍA</div>
+                <div class="grid-footer">
+                    <div class="col-izq">
+                        <div class="fila-cart">
+                            <span class="lbl">POSICIÓN:</span>
+                            <span class="val">${p.posicion || ' - '}</span>
+                        </div>
+                        <div class="fila-cart">
+                            <span class="lbl">MEDIDAS:</span>
+                            <span class="val">${p.medida}</span>
+                        </div>
+                        <div class="fila-cart">
+                            <span class="lbl">FONDO:</span>
+                            <span class="val">${p.fondo}</span>
+                        </div>
+                        <div class="fila-cart">
+                            <span class="lbl">FRENTE:</span>
+                            <span class="val">${p.frente}</span>
+                        </div>
+                        <div class="caja-texto">
+                            <span class="lbl">DATOS / TEXTO:</span>
+                            <div class="val-texto">${p.textos.replace(/\n/g, '<br>')}</div>
+                        </div>
                     </div>
                     
-                    <div class="caja-textos">
-                        <strong>Texto Exacto a Calar / Diseñar:</strong>
-                        <span>${p.textos}</span>
+                    <div class="col-der">
+                        <div class="caja-der">
+                            <div class="lbl-der">MONTO A FACTURAR</div>
+                            <div class="val-monto">${p.monto && p.monto !== "" ? '$' + p.monto : 'S/D'}</div>
+                        </div>
+                        <div class="caja-der">
+                            <div class="lbl-der">MODELO CONFIRMADO</div>
+                            <div class="val-modelo">${textoModelo}</div>
+                        </div>
+                        <div class="caja-der">
+                            <div class="lbl-der">SEGUIMIENTO DE ENVÍO</div>
+                            <div class="val-seg">Sin Seguimiento</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <script>
-                // Dispara la impresión automáticamente en cuanto carga
-                window.onload = function() { 
-                    window.print(); 
-                    // Opcional: cierra la pestaña solita después de imprimir
-                    // setTimeout(window.close, 500); 
-                }
+                // Dispara impresión apenas termina de "dibujar" el HTML
+                window.onload = function() { window.print(); }
             </script>
         </body>
         </html>
     `;
 
-    // Escribe la plantilla en la pestaña nueva
     ventana.document.write(plantilla);
     ventana.document.close();
 }
