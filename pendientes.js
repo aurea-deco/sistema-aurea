@@ -67,6 +67,11 @@ function renderizarTarjetas(pedidos) {
                 <a href="${p.linkPdf}" target="_blank" class="btn-aurea" style="background:#f8f9fa; color:#333; border:1px solid #ddd; text-align:center; text-decoration:none; padding: 10px;">📥 DESCARGAR PDF</a>
                 <button class="btn-aurea" style="background:#25d366; color:white; padding: 10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="enviarWhatsApp('${p.celular}', '${p.nombre}', '${p.linkPdf}')">💬 ENVIAR (Whatsapp)</button>
             </div>
+            <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <strong style="font-size: 11px; color: var(--oxido); display: block; margin-bottom: 5px;">📝 NOTAS / ERRORES:</strong>
+                <textarea id="nota-${p.fila}" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; resize: vertical; font-family: inherit;" placeholder="Si hay algún error, anotalo acá...">${p.observaciones || ''}</textarea>
+                <button style="width: 100%; background: #eee; color: #333; border: 1px solid #ccc; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 5px; font-weight: bold;" onclick="guardarNota(${p.fila})">💾 GUARDAR NOTA</button>
+            </div>
 
             <div style="background:#fff9e6; border:1px solid #ffeeba; padding:15px; border-radius:8px; text-align:center;">
                 <strong style="font-size:12px; color:#8c5642; display:block; margin-bottom:10px;">¿Qué opción eligió?</strong>
@@ -110,5 +115,21 @@ function confirmarModelo(fila, num) {
     }).catch(() => {
         document.body.style.cursor = "default";
         alert("❌ Error de conexión al guardar.");
+    });
+}
+function guardarNota(fila) {
+    const nota = document.getElementById(`nota-${fila}`).value;
+    const btn = event.target;
+    const textoOriginal = btn.innerText;
+    btn.innerText = "⏳ Guardando...";
+    btn.disabled = true;
+
+    fetch(urlAppsScript, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
+    }).then(() => {
+        btn.innerText = "✅ ¡Guardado!";
+        setTimeout(() => { btn.innerText = textoOriginal; btn.disabled = false; }, 2000);
     });
 }

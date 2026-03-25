@@ -129,6 +129,11 @@ function renderizarTarjetas(pedidos) {
                 <label class="paso-item ${isT('pintado')}"><input type="checkbox" value="pintado" onchange="registrarPaso(${p.fila}, this)" ${isC('pintado')}> 5. Pintado</label>
                 <label class="paso-item ${isT('armado')}"><input type="checkbox" value="armado" onchange="registrarPaso(${p.fila}, this)" ${isC('armado')}> 6. Armado</label>
             </div>
+            <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <strong style="font-size: 11px; color: var(--oxido); display: block; margin-bottom: 5px;">📝 NOTAS / ERRORES:</strong>
+                <textarea id="nota-${p.fila}" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; resize: vertical; font-family: inherit;" placeholder="Si hay algún error, anotalo acá...">${p.observaciones || ''}</textarea>
+                <button style="width: 100%; background: #eee; color: #333; border: 1px solid #ccc; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 5px; font-weight: bold;" onclick="guardarNota(${p.fila})">💾 GUARDAR NOTA</button>
+            </div>
 
             <button class="btn-aurea" id="btn-finalizar-${p.fila}" style="background-color:var(--dorado); color:var(--antracita); margin-top:10px;" onclick="finalizarPedido(${p.fila})">✅ Cartel Terminado</button>
         `;
@@ -171,5 +176,21 @@ function finalizarPedido(fila) {
         alert("❌ Error de conexión al intentar guardar.");
         if(tarjeta) tarjeta.style.opacity = "1";
         if(boton) { boton.innerText = "✅ PIEZA TERMINADA"; boton.disabled = false; }
+    });
+}
+function guardarNota(fila) {
+    const nota = document.getElementById(`nota-${fila}`).value;
+    const btn = event.target;
+    const textoOriginal = btn.innerText;
+    btn.innerText = "⏳ Guardando...";
+    btn.disabled = true;
+
+    fetch(urlAppsScript, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
+    }).then(() => {
+        btn.innerText = "✅ ¡Guardado!";
+        setTimeout(() => { btn.innerText = textoOriginal; btn.disabled = false; }, 2000);
     });
 }

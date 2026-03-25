@@ -78,7 +78,11 @@ function renderizarTarjetas(pedidos) {
                 ${p.textos}
             </div>
             <p style="font-size:13px;"><strong>Medida chapa:</strong> ${p.medida}</p>
-            
+            <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <strong style="font-size: 11px; color: var(--oxido); display: block; margin-bottom: 5px;">📝 NOTAS / ERRORES:</strong>
+                <textarea id="nota-${p.fila}" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; resize: vertical; font-family: inherit;" placeholder="Si hay algún error, anotalo acá...">${p.observaciones || ''}</textarea>
+                <button style="width: 100%; background: #eee; color: #333; border: 1px solid #ccc; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 5px; font-weight: bold;" onclick="guardarNota(${p.fila})">💾 GUARDAR NOTA</button>
+            </div>
             <input type="file" id="archivo-dxf-${p.fila}" accept=".dxf">
             <button class="btn-aurea" style="width:100%; background:#007bff; color:white;" onclick="procesarYSubirArchivo(${p.fila}, 'dxf')">✅ ENVIAR A PRODUCCIÓN (DXF)</button>
         `;
@@ -105,4 +109,20 @@ function procesarYSubirArchivo(fila, tipo) {
         });
     };
     lector.readAsDataURL(archivo);
+}
+function guardarNota(fila) {
+    const nota = document.getElementById(`nota-${fila}`).value;
+    const btn = event.target;
+    const textoOriginal = btn.innerText;
+    btn.innerText = "⏳ Guardando...";
+    btn.disabled = true;
+
+    fetch(urlAppsScript, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
+    }).then(() => {
+        btn.innerText = "✅ ¡Guardado!";
+        setTimeout(() => { btn.innerText = textoOriginal; btn.disabled = false; }, 2000);
+    });
 }
