@@ -194,3 +194,32 @@ function guardarNota(fila) {
         setTimeout(() => { btn.innerText = textoOriginal; btn.disabled = false; }, 2000);
     });
 }
+// ==========================================
+// SISTEMA DE NOTIFICACIONES FLOTANTES (TOASTS)
+// ==========================================
+function mostrarNotificacion(mensaje, tipo = "exito") {
+    let contenedor = document.getElementById("contenedor-toast");
+    if (!contenedor) {
+        contenedor = document.createElement("div");
+        contenedor.id = "contenedor-toast";
+        document.body.appendChild(contenedor);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast-aurea ${tipo}`;
+    
+    // Si es éxito pone un tilde verde gigante, si es error pone una cruz roja
+    let icono = tipo === "error" ? "❌" : "✅";
+
+    toast.innerHTML = `<span style="font-size: 24px;">${icono}</span> <span>${mensaje}</span>`;
+    contenedor.appendChild(toast);
+
+    // Animación de entrada
+    setTimeout(() => toast.classList.add("mostrar"), 10);
+
+    // Se va solo a los 3.5 segundos
+    setTimeout(() => {
+        toast.classList.remove("mostrar");
+        setTimeout(() => toast.remove(), 400); 
+    }, 3500);
+}

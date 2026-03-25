@@ -285,3 +285,199 @@ input[type="file"]::file-selector-button:hover {
     color: #aaa;
     text-decoration: line-through;
 }
+/* =========================================================
+   🚀 UPGRADE VISUAL: ÁUREA DECO V2.0 (UX INDUSTRIAL)
+   ========================================================= */
+
+/* 1. FLOTACIÓN EN TARJETAS DE PEDIDOS */
+.tarjeta-aurea,
+.tarjeta-stock {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    will-change: transform, box-shadow;
+}
+
+.tarjeta-aurea:hover,
+.tarjeta-stock:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    border-top-width: 8px;
+    /* Hace que la línea de color superior se vea más gruesa al mirarla */
+}
+
+/* 2. EFECTO PULSADOR FÍSICO EN TODOS LOS BOTONES */
+button,
+.btn-aurea,
+.btn-portal {
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+button:hover,
+.btn-aurea:hover {
+    filter: brightness(1.1);
+    /* Lo hace un poco más brillante */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+button:active,
+.btn-aurea:active {
+    transform: scale(0.96) translateY(2px);
+    /* Se hunde como un botón real */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 3. LATIDO LED PARA SEMÁFOROS ROJOS Y STOCK BAJO */
+@keyframes latido-alerta {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+.tarjeta-stock.alerta,
+.tarjeta-aurea[style*="border-top-color: var(--oxido)"] {
+    animation: latido-alerta 2s infinite;
+}
+
+/* 4. CARGA SUAVE (FADE-IN) PARA QUE NO APAREZCA DE GOLPE */
+@keyframes aparecerSuave {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#contenedor-tarjetas,
+#grid-taller,
+#grid-embalaje,
+#grid-accesorios {
+    animation: aparecerSuave 0.6s ease-out forwards;
+}
+/* =========================================================
+   5. NOTIFICACIONES FLOTANTES (TOASTS) - CONFIRMACIÓN VISUAL
+   ========================================================= */
+#contenedor-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    /* Para que no te bloquee hacer clic en otras cosas */
+}
+
+.toast-aurea {
+    background: #fffcf5;
+    /* Blanco cálido de Áurea */
+    color: #1a1a1a;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Efecto resorte de entrada */
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
+    opacity: 0;
+    border-left: 8px solid #28a745;
+    /* Línea verde súper gruesa para el éxito */
+}
+
+.toast-aurea.mostrar {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-aurea.error {
+    border-left-color: #dc3545;
+}
+
+/* Línea roja para errores */
+/* =========================================================
+   6. ANIMACIONES INDUSTRIALES PARA EMOJIS (MICRO-ZONAS)
+   ========================================================= */
+/* Titileo sutil para la Oficina */
+@keyframes pulso-luz {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.anim-oficina {
+    display: inline-block;
+    animation: pulso-luz 2s ease-in-out infinite;
+    color: #d4af37;
+}
+
+/* Engranaje giratorio continuo para la fábrica */
+@keyframes giro-engranaje {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.anim-fabrica {
+    display: inline-block;
+    animation: giro-engranaje 4s linear infinite;
+    transform-origin: center;
+    color: #004085;
+}
+
+/* Salto de la cajita para logística/despacho */
+@keyframes flecha-caja {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.anim-despacho {
+    display: inline-block;
+    animation: flecha-caja 1.5s ease-in-out infinite;
+}
+
+/* =========================================================
+   7. EFECTO VIDRIO ESMERILADO (GLASSMORPHISM) GLOBAL
+   ========================================================= */
+.efecto-vidrio {
+    background: rgba(255, 252, 245, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
