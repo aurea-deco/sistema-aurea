@@ -181,7 +181,7 @@ function renderizarTablaHTML(pedidos) {
                     <span style="background:${colorBg}; color:${colorTxt}; display:inline-block; margin-bottom:3px; padding:3px 7px; border-radius:4px; font-weight:800; font-size:11px; letter-spacing:0.5px; box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);">${zonaPlanta}</span>
                     <div style="font-size: 10px; color: #888; margin-bottom: 7px; font-style: italic;">(${p.estado})</div>
                     <div style="font-size: 11px; background: #fdfcf8; padding: 6px; border: 1px solid #eee; border-radius: 4px; border-left: 3px solid ${p.observaciones && p.observaciones.trim() !== '' ? '#dc3545' : '#28a745'};">
-                        <strong style="color: #333; font-size:10px; text-transform:uppercase;">📝 Bitácora:</strong><br>
+                        <strong style="color: #333; font-size:10px; text-transform:uppercase;">📝 Estado:</strong><br>
                         <span style="color: ${p.observaciones && p.observaciones.trim() !== '' ? '#dc3545' : '#555'}; font-weight: ${p.observaciones ? 'bold' : 'normal'};">
                             ${p.observaciones && p.observaciones.trim() !== '' ? p.observaciones : '✅ Sin errores.'}
                         </span>
