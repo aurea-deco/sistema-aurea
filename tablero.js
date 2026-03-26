@@ -128,7 +128,7 @@ function filtrarYRenderizarTabla() {
 
     if (termino === "") {
         // Si el buscador está vacío, mostramos solo los activos
-        pedidosAMostrar = pedidosGlobales.filter(p => p.estado !== "Finalizado / Despachado");
+        pedidosAMostrar = pedidosGlobales.filter(p => p.estado !== "Entregado");
     } else {
         // Si hay texto, buscamos en TODOS los pedidos (historial completo)
         pedidosAMostrar = pedidosGlobales.filter(p => {
@@ -206,7 +206,7 @@ function cargarTablero() {
         if(tabla) tabla.style.display = "table";
 
         // Solo armamos el dashboard superior contando los activos
-        const pedidosActivos = datos.filter(p => p.estado !== "Finalizado / Despachado");
+        const pedidosActivos = datos.filter(p => p.estado !== "Entregado");
         armarDashboardLive(pedidosActivos);
         
         // Inyectamos el buscador si no existe
@@ -273,10 +273,12 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
 
           <div style="margin-top:25px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
                 
-                <div style="display:flex; gap:10px;">
-                    <button onclick="editarPedido('${p.id}')" style="background:#ffc107; color:#1a1a1a; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">✏️ EDITAR</button>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button onclick="editarPedido('${p.id}')" style="background:#ffc107; color:#1a1a1a; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer;">✏️ EDITAR</button>
                     
-                    <button onclick="borrarPedido('${p.id}')" style="background:#dc3545; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">🗑️ ELIMINAR</button>
+                    <button onclick="borrarPedido('${p.id}')" style="background:#dc3545; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer;">🗑️ ELIMINAR</button>
+
+                    <button onclick="marcarEntregado('${p.id}')" style="background:#20c997; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.2); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">📦 MARCAR COMO ENTREGADO</button>
                 </div>
 
                 <div style="display:flex; gap:10px;">
@@ -600,6 +602,29 @@ function guardarEdicion(idBuscado) {
         }, 1000);
     })
     .catch(() => alert("Error: Revisá que tu Apps Script esté en 'Cualquier Persona'"));
+}
+// ==========================================
+// MÓDULO LOGÍSTICA: MARCAR ENTREGADO (ARCHIVAR)
+// ==========================================
+function marcarEntregado(idPedido) {
+    if (confirm(`📦 ¿Confirmás que el pedido ${idPedido} ya fue ENTREGADO al cliente?\n\nEsto lo retirará de la planta y borrará la fila de la base de datos activa.`)) {
+        cerrarDetalle();
+        
+        // Enviamos la misma orden de "borrar" al Apps Script que armamos antes
+        fetch(urlAppsScript, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ accion: "borrar", id: idPedido })
+        })
+        .then(() => {
+            setTimeout(() => {
+                alert("🎉 ¡Excelente! Pedido entregado y archivado exitosamente.");
+                cargarTablero(); 
+            }, 1000);
+        })
+        .catch(() => alert("Error de conexión al intentar archivar el pedido."));
+    }
 }
 document.addEventListener("DOMContentLoaded", cargarTablero);
 setInterval(cargarTablero, 30000);

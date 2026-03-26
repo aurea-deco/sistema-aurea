@@ -24,12 +24,17 @@ function copiarDatos(nombre, dni, celular, direccion, localidad, provincia, cp) 
     navigator.clipboard.writeText(texto).then(() => alert("📋 ¡Datos copiados! Listos para pegar en Mi Correo."));
 }
 
+// ==========================================
+// RENDERIZADO DE LA PANTALLA DE DESPACHO
+// ==========================================
 function renderizarTarjetas(pedidos) {
     const contenedor = document.getElementById("contenedor-tarjetas");
     document.getElementById("cargando").style.display = "none";
-    const despacho = pedidos.filter(p => p.estado === "Listo para Despacho");
+    
+    // 👇 CAMBIO 1: El Filtro (Ahora muestra los que están listos y los despachados, pero oculta los Entregados)
+    const despacho = pedidos.filter(p => (p.estado === "Listo para Despacho" || p.estado.includes("Finalizado")) && p.estado !== "Entregado");
 
-    contenedor.innerHTML = despacho.length === 0 ? "<h3 style='color:#666;'>No hay cajas pendientes.</h3>" : "";
+    contenedor.innerHTML = despacho.length === 0 ? "<h3 style='color:#666; text-align:center;'>No hay cajas pendientes.</h3>" : "";
     
     despacho.forEach(p => {
         let pasos = p.progreso ? p.progreso.split(',') : [];
@@ -40,6 +45,9 @@ function renderizarTarjetas(pedidos) {
         tarjeta.className = "tarjeta-aurea";
         tarjeta.style.borderTopColor = "#0056b3";
         tarjeta.id = `tarjeta-${p.fila}`;
+        
+        // Verificamos si ya tiene el rótulo subido (estado finalizado)
+        const yaDespachado = p.estado.includes("Finalizado");
         
         tarjeta.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -78,8 +86,16 @@ function renderizarTarjetas(pedidos) {
                 <label class="paso-item ${isT('etiqueta')}"><input type="checkbox" value="etiqueta" onchange="registrarPasoDespacho(${p.fila}, this)" ${isC('etiqueta')}> 3. Etiqueta Pegada y Controlada</label>
             </div>
             
-            <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf,.jpg,.png" style="margin-top:5px;">
-            <button class="btn-aurea" id="btn-despachar-${p.fila}" style="width:100%; background:#25d366; color:white; margin-top:10px;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}')">💬 DESPACHAR Y AVISAR</button>
+            ${yaDespachado ? `
+                <div style="background:#d4edda; padding:10px; border-radius:6px; margin-bottom:10px; border: 1px solid #c3e6cb;">
+                    <strong style="color:#155724; font-size:12px; display:block; text-align:center;">✅ Paquete en tránsito</strong>
+                    ${p.linkRotulo ? `<a href="${p.linkRotulo}" target="_blank" style="display:block; text-align:center; margin-top:5px; font-size:11px; color:#0056b3; font-weight:bold;">📄 Ver / Imprimir Rótulo Subido</a>` : ''}
+                </div>
+                <button onclick="marcarEntregado('${p.id}')" style="width:100%; background:#20c997; color:white; padding:12px; border-radius:6px; font-size:14px; font-weight:900; border:none; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2);">📦 MARCAR COMO ENTREGADO</button>
+            ` : `
+                <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf,.jpg,.png" style="margin-top:5px;">
+                <button class="btn-aurea" id="btn-despachar-${p.fila}" style="width:100%; background:#25d366; color:white; margin-top:10px;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}')">💬 DESPACHAR Y AVISAR</button>
+            `}
         `;
         contenedor.appendChild(tarjeta);
     });
@@ -172,4 +188,25 @@ function mostrarNotificacion(mensaje, tipo = "exito") {
         toast.classList.remove("mostrar");
         setTimeout(() => toast.remove(), 400); 
     }, 3500);
+}
+// ==========================================
+// MÓDULO LOGÍSTICA: MARCAR ENTREGADO (ARCHIVAR)
+// ==========================================
+function marcarEntregado(idPedido) {
+    if (confirm(`📦 ¿Confirmás que el paquete del pedido ${idPedido} ya fue ENTREGADO o despachado con éxito?\n\nEsto lo retirará de la pantalla y archivará la fila en la base de datos.`)) {
+        
+        fetch(urlAppsScript, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ accion: "borrar", id: idPedido })
+        })
+        .then(() => {
+            setTimeout(() => {
+                alert("🎉 ¡Excelente! Pedido archivado exitosamente.");
+                cargarDatosSeguros(); // Recarga la tabla en la página de despacho
+            }, 1000);
+        })
+        .catch(() => alert("Error de conexión al intentar archivar el pedido."));
+    }
 }
