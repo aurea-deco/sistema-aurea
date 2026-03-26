@@ -1,52 +1,128 @@
 // ⚠️ PEGA TU LINK DE APPS SCRIPT ACÁ:
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec"; 
 
-// 1. AUTOCOMPLETAR LA FICHA (VERSIÓN INTELIGENTE)
+// ==========================================
+// CEREBRO LECTOR V2.1 (AJUSTE SUCURSAL Y FILTROS)
+// ==========================================
 function procesarTexto() {
-    const texto = document.getElementById('texto-whatsapp').value;
-    const buscarDato = (palabrasClave) => {
-        const regex = new RegExp("(" + palabrasClave + ")\\s*[:\\-]?\\s*(.*)", "i");
-        const coincidencia = texto.match(regex);
-        return coincidencia ? coincidencia[2].trim() : ""; 
+    const rawText = document.getElementById("texto-whatsapp").value;
+    if (!rawText.trim()) {
+        alert("⚠️ Por favor, pegá el texto del mensaje primero.");
+        return;
+    }
+
+    // 1. Limpieza de basura de WhatsApp y formatos raros
+    let textoLimpio = rawText.replace(/\[\d{1,2}:\d{2}.*?\]\s*.*?:/g, "\n"); 
+    textoLimpio = textoLimpio.replace(/\n+/g, '\n').trim();
+
+    let lineas = textoLimpio.split('\n').map(l => l.trim()).filter(l => l !== "");
+
+    let nombre = "", dni = "", tel = "", cp = "", prov = "", loc = "", direccion = "";
+    let medida = "", posicion = "", textos = "", frente = "", fondo = "";
+
+    // 2. BÚSQUEDA LÍNEA POR LÍNEA
+    for (let l of lineas) {
+        let soloNumeros = l.replace(/\D/g, ''); 
+        
+        if (/^\d{7,8}$/.test(l.replace(/\./g, ''))) {
+            dni = l.replace(/\./g, '');
+        }
+        else if (/^\d{4}$/.test(l)) {
+            cp = l;
+        }
+        else if (soloNumeros.length >= 10 && soloNumeros.length <= 14 && l !== dni) {
+            tel = l;
+        }
+    }
+
+    const provincias = ["Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán", "CABA", "Capital Federal"];
+    
+    for (let i = 0; i < lineas.length; i++) {
+        let l = lineas[i];
+        for (let p of provincias) {
+            if (new RegExp("\\b" + p + "\\b", "i").test(l)) {
+                prov = p;
+                if (i > 0 && !/\d/.test(lineas[i-1])) {
+                    loc = lineas[i-1];
+                }
+                break;
+            }
+        }
+    }
+
+    for (let l of lineas) {
+        if (/[a-zA-Z]/.test(l) && !/horizontal|vertical|frente|fondo|datos|texto|número|numero|medida|cartel/i.test(l)) {
+            if (l !== loc && l.toUpperCase() !== prov.toUpperCase()) {
+                nombre = l;
+                break; 
+            }
+        }
+    }
+
+    const txtUnido = lineas.join(" | ");
+
+    let matchMedida = txtUnido.match(/\b\d{2,3}\s*[xX*]\s*\d{2,3}\b/);
+    if (matchMedida) medida = matchMedida[0].toLowerCase(); 
+
+    let matchPos = txtUnido.match(/\b(Horizontal|Vertical)\b/i);
+    if (matchPos) posicion = matchPos[1];
+
+    let matchFondo = txtUnido.match(/Fondo\s*[:\-]?\s*([^|]+)/i);
+    if (matchFondo) fondo = matchFondo[1].trim();
+
+    let matchFrente = txtUnido.match(/Frente\s*[:\-]?\s*([^|]+)/i);
+    if (matchFrente) frente = matchFrente[1].trim();
+
+    let matchDatos = txtUnido.match(/(?:Datos|Texto|Número|Numero|Detalle)s?\s*[:\-]?\s*([^|]+)/i);
+    if (matchDatos) textos = matchDatos[1].trim();
+
+    // CALLE: Excluimos explícitamente las palabras de diseño (Datos, Texto, Número)
+    for (let l of lineas) {
+        let upperL = l.toUpperCase();
+        if (l.length > 5 && l !== nombre && l !== loc && upperL !== prov.toUpperCase() && l !== tel &&
+            !upperL.includes("FRENTE") && !upperL.includes("FONDO") && !upperL.includes("CARTEL") && 
+            !upperL.includes("HORIZONTAL") && !upperL.includes("VERTICAL") && 
+            !upperL.includes("DATOS") && !upperL.includes("TEXTO") && !upperL.includes("NÚMERO") && !upperL.includes("NUMERO") && 
+            !/^\d+$/.test(l)) {
+            
+            direccion = l.split(' y:')[0].replace(/:\s*$/, '').trim();
+            break;
+        }
+    }
+
+    // 3. INYECCIÓN EN EL HTML
+    const inyectar = (id, valor) => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.innerText = valor ? valor.toUpperCase() : "";
+        }
     };
 
-    document.getElementById('nombre-cliente').innerText = buscarDato("Nombre|Cliente|Nombre y Apellido").toUpperCase();
-    document.getElementById('dni').innerText = buscarDato("DNI|CUIT|Documento");
-    document.getElementById('telefono').innerText = buscarDato("Celular|Teléfono|Telefono|Tel");
-    
-    // Provincia con valor por defecto "BUENOS AIRES"
-    document.getElementById('provincia').innerText = buscarDato("Provincia").toUpperCase() || "BUENOS AIRES";
-    
-    document.getElementById('localidad').innerText = buscarDato("Localidad|Ciudad").toUpperCase();
-    document.getElementById('cp').innerText = buscarDato("CP|Código Postal|Codigo Postal|Codigo");
-    document.getElementById('calle').innerText = buscarDato("Calle|Dirección|Direccion").toUpperCase();
-    document.getElementById('altura').innerText = buscarDato("Altura|Número|Numero").toUpperCase();
-    
-    const textoEnvio = buscarDato("Envío|Envio|Datos envío|Datos envio");
-    document.getElementById('datos-envio').innerText = textoEnvio.toUpperCase();
-
-    const tipoEnvio = textoEnvio.toLowerCase();
-    document.getElementById('check-domicilio').checked = tipoEnvio.includes("domicilio");
-    document.getElementById('check-sucursal').checked = tipoEnvio.includes("sucursal") || tipoEnvio.includes("correo");
-
-    document.getElementById('nick').innerText = buscarDato("Nick|Usuario|Usuario IG").toUpperCase();
-    document.getElementById('posicion').innerText = buscarDato("Posición|Posicion|Orientación|Orientacion").toUpperCase();
-    document.getElementById('medidas').innerText = buscarDato("Medida|Medidas|Tamaño").toUpperCase();
-    document.getElementById('fondo').innerText = buscarDato("Fondo|Color Fondo").toUpperCase();
-    document.getElementById('frente').innerText = buscarDato("Frente|Color Frente").toUpperCase();
-    
-    let datosCartel = buscarDato("Datos cartel|Texto cartel|Texto|Datos");
-    if (!datosCartel) {
-        datosCartel = document.getElementById('calle').innerText + " " + document.getElementById('altura').innerText;
+    // LOGICA DE SUCURSAL: Si lee "sucursal", tilda el check y vacía la calle
+    if (/sucursal/i.test(txtUnido)) {
+        if (document.getElementById("check-sucursal")) {
+            document.getElementById("check-sucursal").checked = true;
+        }
+        direccion = ""; 
     }
-    document.getElementById('datos-cartel').innerText = datosCartel.toUpperCase();
-    document.getElementById('monto').innerText = buscarDato("Monto|Precio|Total");
 
-    const hoy = new Date();
-    document.getElementById('fecha-ingreso').innerText = hoy.toLocaleDateString('es-AR');
-    const fechaEnvio = new Date(hoy);
-    fechaEnvio.setDate(fechaEnvio.getDate() + 10);
-    document.getElementById('fecha-envio').innerText = fechaEnvio.toLocaleDateString('es-AR');
+    inyectar("nombre-cliente", nombre);
+    inyectar("dni", dni);
+    inyectar("telefono", tel);
+    inyectar("provincia", prov);
+    inyectar("localidad", loc);
+    inyectar("cp", cp);
+    inyectar("calle", direccion); // Ahora si es sucursal, entra vacío
+    
+    inyectar("medidas", medida);
+    inyectar("posicion", posicion);
+    inyectar("fondo", fondo);
+    inyectar("frente", frente);
+    inyectar("datos-cartel", textos);
+
+    inyectar("fecha-ingreso", new Date().toLocaleDateString('es-AR'));
+
+    alert("✅ ¡Auto-completado exitoso! Revisá que todos los datos estén en su lugar.");
 }
 
 // 2. GUARDAR EN GOOGLE SHEETS

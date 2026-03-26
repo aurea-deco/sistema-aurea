@@ -89,14 +89,16 @@ function renderizarTarjetas(pedidos) {
     });
 }
 
+// ==========================================
+// ENVÍO DE PDF A GRUPO DE WHATSAPP INTERNO
+// ==========================================
 function enviarWhatsApp(celular, nombre, linkPdf) {
-    let tel = String(celular).replace(/\D/g, "");
-    if (tel.length === 10) tel = "549" + tel;
-    let nom = nombre.split(" ")[0];
+    // 1. Armamos el mensaje con formato para el equipo interno
+    let msj = `%0A%0A👤 *Cliente:* ${nombre}%0A📱 *Tel:* ${celular}%0A📄 *Ver PDF:* ${linkPdf}%0A%0A`;
 
-    let msj = `¡Hola ${nom}! 👋%0A%0ATe escribimos de Áurea Deco. Ya tenemos listos los bocetos de tu cartel para que elijas el que más te guste ✨%0A%0APodés verlos haciendo clic en este link:%0A${linkPdf}%0A%0A¿Qué número de opción te gusta más?`;
-
-    window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
+    // 2. Usamos el link universal de WhatsApp SIN número de teléfono.
+    // Esto hace que WhatsApp Web/App te abra la lista de tus chats y grupos para que elijas a cuál mandarlo.
+    window.open(`https://wa.me/?text=${msj}`, '_blank');
 }
 
 function confirmarModelo(fila, num) {

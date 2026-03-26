@@ -271,12 +271,20 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
                 <p style="margin:10px 0 0 0; font-size:14px; color:${p.observaciones && p.observaciones.trim() !== '' ? '#dc3545' : '#28a745'};"><strong>📝 Notas/Errores:</strong> ${p.observaciones || 'Sin errores registrados.'}</p>
             </div>
 
-            <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button onclick="imprimirFicha('${p.id}')" style="background:#1a1a1a; color:#d4af37; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.2); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">🖨️ IMPRIMIR FICHA</button>
+          <div style="margin-top:25px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
                 
-                ${p.linkPdf ? `<a href="${p.linkPdf}" target="_blank" style="background:#dc3545; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">📄 VER PDF</a>` : ''}
-                ${p.linkDxf ? `<a href="${p.linkDxf}" target="_blank" style="background:#007bff; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">⚙️ VER DXF</a>` : ''}
-                ${p.linkRotulo ? `<a href="${p.linkRotulo}" target="_blank" style="background:#28a745; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">🏷️ VER RÓTULO</a>` : ''}
+                <div style="display:flex; gap:10px;">
+                    <button onclick="editarPedido('${p.id}')" style="background:#ffc107; color:#1a1a1a; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">✏️ EDITAR</button>
+                    
+                    <button onclick="borrarPedido('${p.id}')" style="background:#dc3545; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">🗑️ ELIMINAR</button>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button onclick="imprimirFicha('${p.id}')" style="background:#1a1a1a; color:#d4af37; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.2); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">🖨️ IMPRIMIR FICHA</button>
+                    
+                    ${p.linkPdf ? `<a href="${p.linkPdf}" target="_blank" style="background:#6c757d; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">📄 PDF</a>` : ''}
+                    ${p.linkDxf ? `<a href="${p.linkDxf}" target="_blank" style="background:#007bff; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">⚙️ DXF</a>` : ''}
+                </div>
             </div>
 
         </div>
@@ -501,6 +509,50 @@ function imprimirFicha(idBuscado) {
     ventana.document.write(plantilla);
     ventana.document.close();
 }
+// ==========================================
+// MÓDULO DE ADMINISTRACIÓN (BORRAR PEDIDO)
+// ==========================================
+function borrarPedido(idPedido) {
+    const confirmacion = confirm(`⚠️ ATENCIÓN: Estás a punto de ELIMINAR el pedido ${idPedido}.\n\nEsta acción borrará todos los datos de la base de datos y no se puede deshacer.\n\n¿Estás totalmente seguro de continuar?`);
+    
+    if (confirmacion) {
+        // 1. Cerramos la ventana flotante
+        cerrarDetalle();
+        
+        // 2. Le avisamos al usuario que estamos procesando
+        if (typeof mostrarNotificacion === "function") {
+            mostrarNotificacion("Eliminando pedido de la base de datos...", "exito");
+        }
 
+        // 3. Enviamos la orden de disparo a Apps Script
+        fetch(urlAppsScript, {
+            method: 'POST',
+            body: JSON.stringify({ accion: "borrar", id: idPedido })
+        })
+        .then(res => res.json())
+        .then(respuesta => {
+            if(respuesta.status === "ok") {
+                if (typeof mostrarNotificacion === "function") {
+                    mostrarNotificacion("✅ Pedido eliminado correctamente.");
+                } else {
+                    alert("✅ Pedido eliminado correctamente.");
+                }
+                // Recargamos el tablero para que el pedido desaparezca de la pantalla al instante
+                cargarTablero(); 
+            } else {
+                alert("❌ Hubo un error en la base de datos: " + respuesta.mensaje);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Error de conexión al intentar borrar.");
+        });
+    }
+}
+
+// Dejamos la de editar pendiente para el próximo paso
+function editarPedido(idPedido) {
+    alert(`🚧 Módulo de Edición: Para editar el pedido ${idPedido} necesitamos crear un formulario emergente. ¿Lo armamos?`);
+}
 document.addEventListener("DOMContentLoaded", cargarTablero);
 setInterval(cargarTablero, 30000);
