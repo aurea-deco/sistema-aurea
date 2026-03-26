@@ -510,49 +510,96 @@ function imprimirFicha(idBuscado) {
     ventana.document.close();
 }
 // ==========================================
-// MÓDULO DE ADMINISTRACIÓN (BORRAR PEDIDO)
+// MÓDULO DE ADMINISTRACIÓN (V3 FINAL)
 // ==========================================
+
 function borrarPedido(idPedido) {
-    const confirmacion = confirm(`⚠️ ATENCIÓN: Estás a punto de ELIMINAR el pedido ${idPedido}.\n\nEsta acción borrará todos los datos de la base de datos y no se puede deshacer.\n\n¿Estás totalmente seguro de continuar?`);
-    
-    if (confirmacion) {
-        // 1. Cerramos la ventana flotante
+    if (confirm(`⚠️ Vas a ELIMINAR el pedido ${idPedido}.\n\n¿Estás seguro?`)) {
         cerrarDetalle();
         
-        // 2. Le avisamos al usuario que estamos procesando
-        if (typeof mostrarNotificacion === "function") {
-            mostrarNotificacion("Eliminando pedido de la base de datos...", "exito");
-        }
-
-        // 3. Enviamos la orden de disparo a Apps Script
         fetch(urlAppsScript, {
             method: 'POST',
             body: JSON.stringify({ accion: "borrar", id: idPedido })
         })
-        .then(res => res.json())
-        .then(respuesta => {
-            if(respuesta.status === "ok") {
-                if (typeof mostrarNotificacion === "function") {
-                    mostrarNotificacion("✅ Pedido eliminado correctamente.");
-                } else {
-                    alert("✅ Pedido eliminado correctamente.");
-                }
-                // Recargamos el tablero para que el pedido desaparezca de la pantalla al instante
+        .then(() => {
+            // Recarga obligatoria para limpiar la tabla
+            setTimeout(() => {
+                alert("✅ Pedido eliminado.");
                 cargarTablero(); 
-            } else {
-                alert("❌ Hubo un error en la base de datos: " + respuesta.mensaje);
-            }
+            }, 1000);
         })
-        .catch(err => {
-            console.error(err);
-            alert("❌ Error de conexión al intentar borrar.");
-        });
+        .catch(() => alert("Error: Revisá que tu Apps Script esté en 'Cualquier Persona'"));
     }
 }
 
-// Dejamos la de editar pendiente para el próximo paso
-function editarPedido(idPedido) {
-    alert(`🚧 Módulo de Edición: Para editar el pedido ${idPedido} necesitamos crear un formulario emergente. ¿Lo armamos?`);
+// Abre la ventana de edición (La interfaz queda igual)
+function editarPedido(idBuscado) {
+    const p = pedidosGlobales.find(pedido => pedido.id === idBuscado);
+    if (!p) return;
+
+    cerrarDetalle();
+
+    let modalOverlay = document.getElementById("modal-edicion-aurea");
+    if (!modalOverlay) {
+        modalOverlay = document.createElement("div");
+        modalOverlay.id = "modal-edicion-aurea";
+        modalOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;";
+        document.body.appendChild(modalOverlay);
+    }
+
+    modalOverlay.innerHTML = `
+        <div style="background:#fffcf5; border: 2px solid #d4af37; width:100%; max-width:500px; border-radius:8px; padding:30px; position:relative; font-family:'Montserrat', sans-serif;">
+            <h2 style="margin-top:0; border-bottom:3px solid #1a1a1a; padding-bottom:10px;">✏️ EDITAR: ${p.id}</h2>
+            <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+                <div><label>Nombre:</label><br><input type="text" id="edit-nombre" value="${p.nombre || ''}" style="width:100%; padding:8px;"></div>
+                <div><label>Celular:</label><br><input type="text" id="edit-celular" value="${p.celular || ''}" style="width:100%; padding:8px;"></div>
+                <div><label>Textos:</label><br><textarea id="edit-textos" rows="2" style="width:100%; padding:8px;">${p.textos || ''}</textarea></div>
+                <div><label>Estado:</label><br>
+                    <select id="edit-estado" style="width:100%; padding:8px;">
+                        <option value="${p.estado}" selected>Actual: ${p.estado}</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Esperando Diseño">Esperando Diseño</option>
+                        <option value="Listo para Corte CNC">Listo para Corte CNC</option>
+                        <option value="En Pintura / Armado">En Pintura / Armado</option>
+                        <option value="Embalaje y Despacho">Embalaje y Despacho</option>
+                    </select>
+                </div>
+                <div><label>Notas:</label><br><textarea id="edit-observaciones" rows="2" style="width:100%; padding:8px;">${p.observaciones || ''}</textarea></div>
+            </div>
+            <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="document.getElementById('modal-edicion-aurea').style.display='none'" style="padding:10px; cursor:pointer;">CANCELAR</button>
+                <button onclick="guardarEdicion('${p.id}')" style="background:#28a745; color:white; padding:10px; border:none; cursor:pointer;">💾 GUARDAR</button>
+            </div>
+        </div>
+    `;
+    modalOverlay.style.display = "flex";
+}
+
+// Dispara el guardado
+function guardarEdicion(idBuscado) {
+    document.getElementById("modal-edicion-aurea").style.display = "none";
+    
+    fetch(urlAppsScript, {
+        method: 'POST',
+        body: JSON.stringify({
+            accion: "editar",
+            id: idBuscado,
+            datos: {
+                nombre: document.getElementById("edit-nombre").value,
+                celular: document.getElementById("edit-celular").value,
+                textos: document.getElementById("edit-textos").value,
+                estado: document.getElementById("edit-estado").value,
+                observaciones: document.getElementById("edit-observaciones").value
+            }
+        })
+    })
+    .then(() => {
+        setTimeout(() => {
+            alert("✅ Pedido actualizado.");
+            cargarTablero(); 
+        }, 1000);
+    })
+    .catch(() => alert("Error: Revisá que tu Apps Script esté en 'Cualquier Persona'"));
 }
 document.addEventListener("DOMContentLoaded", cargarTablero);
 setInterval(cargarTablero, 30000);
