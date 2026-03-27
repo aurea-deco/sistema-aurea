@@ -233,23 +233,7 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
     }
 
     const zonaLimpia = zonaTraducida.replace(/<[^>]*>?/gm, '').trim();
-    // ==========================================
-    // LÓGICA DE RUTEO (DEEP LINKING)
-    // ==========================================
-    let linkSeccion = "";
-    let nombreSeccion = "";
-
-    // ⚠️ Importante: Cambiá "taller.html", "despacho.html" o "diseno.html" por el nombre real de tus archivos
-    if (p.estado === "Pendiente" || p.estado === "Esperando Diseño") {
-        linkSeccion = "diseno.html"; 
-        nombreSeccion = "DISEÑO";
-    } else if (p.estado === "Listo para Corte CNC" || p.estado === "En Pintura / Armado") {
-        linkSeccion = "taller.html";
-        nombreSeccion = "TALLER";
-    } else if (p.estado === "Embalaje y Despacho" || p.estado === "Listo para Despacho" || p.estado.includes("Finalizado")) {
-        linkSeccion = "despacho.html";
-        nombreSeccion = "DESPACHO";
-    }
+    
 
     modalOverlay.innerHTML = `
         <div id="modal-ventana-aurea" style="background: rgba(255, 252, 245, 0.90); border: 1px solid rgba(255,255,255,0.5); width:100%; max-width:750px; max-height:90vh; overflow-y:auto; border-radius:12px; padding:35px; box-shadow:0 15px 35px rgba(0,0,0,0.2); position:relative; font-family:'Montserrat', sans-serif;">
@@ -287,13 +271,6 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
                 <p style="margin:10px 0 5px 0; font-size:14px;"><strong>Avance de Taller (Tildes):</strong> ${p.progreso || 'Ninguno todavía'}</p>
                 <p style="margin:10px 0 0 0; font-size:14px; color:${p.observaciones && p.observaciones.trim() !== '' ? '#dc3545' : '#28a745'};"><strong>📝 Notas/Errores:</strong> ${p.observaciones || 'Sin errores registrados.'}</p>
             </div>
-            ${linkSeccion !== "" ? `
-            <div style="margin-top:15px; margin-bottom:15px; text-align:center;">
-                <a href="${linkSeccion}?id=${p.id}" style="display:inline-block; width:100%; background:#0056b3; color:white; padding:12px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:900; box-shadow:0 4px 10px rgba(0,86,179,0.3); transition:0.2s;">
-                    🚀 IR A LA SECCIÓN: ${nombreSeccion}
-                </a>
-            </div>
-            ` : ''}
 
           <div style="margin-top:25px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
                 
