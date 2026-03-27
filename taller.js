@@ -223,3 +223,44 @@ function mostrarNotificacion(mensaje, tipo = "exito") {
         setTimeout(() => toast.remove(), 400); 
     }, 3500);
 }
+// ==========================================
+// RADAR DE DEEP LINKING (BUSCADOR AUTOMÁTICO)
+// ==========================================
+function enfocarPedidoDesdeTablero() {
+    // 1. Leemos si la URL trae un número de pedido (Ej: ?id=396)
+    const parametros = new URLSearchParams(window.location.search);
+    const idBuscado = parametros.get('id');
+
+    if (idBuscado) {
+        // 2. Le damos 1.5 segundos al sistema para que descargue los datos de Google y dibuje las tarjetas
+        setTimeout(() => {
+            // Agarramos todas las tarjetas que haya en la pantalla
+            const tarjetas = document.querySelectorAll('.tarjeta-aurea, .tarjeta-despacho, .tarjeta-taller'); 
+            
+            for (let tarjeta of tarjetas) {
+                // Si el texto de la tarjeta contiene el ID que buscamos...
+                if (tarjeta.innerText.includes(idBuscado)) {
+                    
+                    // A. Bajamos la pantalla suavemente hasta dejar la tarjeta en el centro
+                    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // B. Le clavamos un efecto de luz verde flúor para que resalte
+                    tarjeta.style.transition = "all 0.5s ease-in-out";
+                    tarjeta.style.boxShadow = "0 0 30px #25d366, inset 0 0 10px #25d366";
+                    tarjeta.style.transform = "scale(1.02)";
+                    
+                    // C. A los 3 segundos le sacamos el brillo para que vuelva a la normalidad
+                    setTimeout(() => {
+                        tarjeta.style.boxShadow = "";
+                        tarjeta.style.transform = "scale(1)";
+                    }, 3000);
+                    
+                    break; // Cortamos la búsqueda porque ya lo encontramos
+                }
+            }
+        }, 1500); 
+    }
+}
+
+// 3. Activamos el radar apenas carga la página
+document.addEventListener("DOMContentLoaded", enfocarPedidoDesdeTablero);
