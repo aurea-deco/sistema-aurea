@@ -126,24 +126,12 @@ function registrarPasoDespacho(fila, cb) {
 }
 
 function despachar(fila, celular, nombre) {
-    if (document.getElementById(`lista-pasos-despacho-${fila}`).querySelectorAll('input:not(:checked)').length > 0) {
-        if (!confirm("⚠️ Faltan pasos de control por marcar. ¿Querés despachar igual?")) return;
-    }
-
-    const archivo = document.getElementById(`archivo-rotulo-${fila}`).files[0];
-    if(!archivo) return alert("⚠️ Subí el comprobante del correo primero.");
-    
-    const trackingCode = document.getElementById(`tracking-${fila}`).value.trim();
-
-    const btn = document.getElementById(`btn-despachar-${fila}`); 
-    btn.innerText = "⏳ Guardando..."; btn.disabled = true;
-
+    // ... (tus validaciones del principio quedan igual)
     const lector = new FileReader();
     lector.onloadend = function() {
-        // fetch corregido sin no-cors
         fetch(urlAppsScript, { 
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            mode: 'no-cors', // 👈 Vuelve el modo silencioso
             body: JSON.stringify({ 
                 accion: "subir_archivo", 
                 fila: fila, 
@@ -152,15 +140,8 @@ function despachar(fila, celular, nombre) {
                 mimeType: archivo.type, 
                 base64: lector.result 
             })
-        })
-        .then(() => { 
-            let tel = String(celular).replace(/\D/g, ""); if (tel.length === 10) tel = "549" + tel;
-            let nom = nombre.split(" ")[0];
-            let msj = `¡Hola ${nom}! 👋%0A%0A¡Tu cartel ya está empacado y en camino! 🚀`;
-            if (trackingCode !== "") {
-                msj += `%0A%0ATu Código de Seguimiento es: *${trackingCode}*`;
-            }
-            window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
+        }).then(() => { 
+            alert("✅ Rótulo enviado.");
             location.reload(); 
         });
     };

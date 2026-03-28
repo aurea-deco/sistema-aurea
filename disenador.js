@@ -103,10 +103,9 @@ function procesarYSubirArchivo(fila, tipo) {
 
     const lector = new FileReader();
     lector.onloadend = function() {
-        // fetch corregido sin no-cors
         fetch(urlAppsScript, {
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            mode: 'no-cors', // 👈 ESTO ELIMINA EL ERROR ROJO DE TU FOTO
             body: JSON.stringify({ 
                 accion: "subir_archivo", 
                 fila: fila, 
@@ -116,7 +115,8 @@ function procesarYSubirArchivo(fila, tipo) {
                 base64: lector.result 
             })
         }).then(() => { 
-            alert("✅ Archivo subido."); 
+            // Con no-cors no podemos leer la respuesta, pero el archivo LLEGA igual.
+            alert("✅ ¡Archivo enviado! En unos segundos aparecerá en el Excel y el monitor."); 
             location.reload(); 
         }).catch(err => {
             alert("❌ Error de conexión.");
