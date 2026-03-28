@@ -15,7 +15,10 @@ function obtenerSemaforo(fechaCruda) {
 function cargarDatosSeguros() {
     const inputs = document.querySelectorAll('input[type="file"]');
     const usandoArchivo = Array.from(inputs).some(input => input.files.length > 0);
-    if (!usandoArchivo) fetch(urlAppsScript).then(res => res.json()).then(datos => renderizarTarjetas(datos));
+    
+    const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
+    
+    if (!usandoArchivo) fetch(urlFresca).then(res => res.json()).then(datos => renderizarTarjetas(datos));
 }
 
 document.addEventListener("DOMContentLoaded", () => {

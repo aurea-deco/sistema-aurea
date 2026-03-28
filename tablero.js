@@ -197,8 +197,9 @@ function renderizarTablaHTML(pedidos) {
 // CEREBRO PRINCIPAL (CARGA DE DATOS)
 // ==========================================
 function cargarTablero() {
-    fetch(urlAppsScript).then(res => res.json()).then(datos => {
-        pedidosGlobales = datos; 
+    const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
+    
+    fetch(urlFresca).then(res => res.json()).then(datos => {
         
         const loading = document.getElementById("cargando");
         const tabla = document.getElementById("tabla-pedidos");

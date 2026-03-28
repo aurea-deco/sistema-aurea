@@ -18,12 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function cargarDatos() {
-    fetch(urlAppsScript)
+    // Le agregamos la hora actual al link para engañar a Chrome y que no use la memoria
+    const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
+    
+    fetch(urlFresca)
         .then(res => res.json())
         .then(pedidos => renderizarTarjetas(pedidos))
         .catch(e => console.error("Error al cargar pedidos:", e));
 }
-
 function renderizarTarjetas(pedidos) {
     // Busca el contenedor (ajustá el ID si en tu HTML se llama distinto)
     const contenedor = document.getElementById("contenedor-tarjetas") || document.getElementById("contenedor-pendientes");
