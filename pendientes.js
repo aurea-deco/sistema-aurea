@@ -1,3 +1,4 @@
+alert("¡HOLA! EL CÓDIGO SÍ ESTÁ CONECTADO");
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec";  
 
 function obtenerSemaforo(fechaCruda) {
@@ -18,77 +19,43 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function cargarDatos() {
-    // Le agregamos la hora actual al link para engañar a Chrome y que no use la memoria
     const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
     
     fetch(urlFresca)
         .then(res => res.json())
-        .then(pedidos => renderizarTarjetas(pedidos))
-        .catch(e => console.error("Error al cargar pedidos:", e));
+        .then(pedidos => {
+            // ESTO NOS VA A MOSTRAR LA VERDAD EN LA CONSOLA:
+            console.log("🚨 DATOS QUE LLEGARON DE GOOGLE:", pedidos);
+            renderizarTarjetas(pedidos);
+        })
+        .catch(e => {
+            console.error("🚨 ERROR GIGANTE AL CARGAR:", e);
+            alert("¡Falló la conexión con Google! Apretá F12.");
+        });
 }
 function renderizarTarjetas(pedidos) {
-    // Busca el contenedor (ajustá el ID si en tu HTML se llama distinto)
     const contenedor = document.getElementById("contenedor-tarjetas") || document.getElementById("contenedor-pendientes");
-    if (!contenedor) return;
-
-    // Filtramos los que ya tienen PDF pero todavía están en "Esperando Diseño" (Falta confirmar)
-    const pendientes = pedidos.filter(p => p.estado === "Esperando Diseño" && p.linkPdf && p.linkPdf.trim() !== "");
-
     if (document.getElementById("cargando")) document.getElementById("cargando").style.display = "none";
-    contenedor.innerHTML = "";
 
-    if (pendientes.length === 0) {
-        contenedor.innerHTML = "<h3 style='color:#666; text-align:center; width:100%;'>No hay pedidos pendientes de confirmación.</h3>";
-        return;
-    }
+    // --- MODO ESCÁNER INICIO ---
+    let htmlDebug = `<div style="background:#111; color:#0f0; padding:20px; border-radius:8px; font-family:monospace; text-align:left; font-size:14px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 100%;">`;
+    htmlDebug += `<h3 style="color:#fff; margin-top:0;">🕵️‍♂️ RADIOGRAFÍA DE LA BASE DE DATOS</h3>`;
+    htmlDebug += `<p style="color:#aaa;">Si el LinkPDF dice "undefined" o algo raro, el código está leyendo la columna equivocada.</p><hr style="border-color:#333;">`;
 
-    pendientes.forEach(p => {
-        const tarjeta = document.createElement("div");
-        tarjeta.className = "tarjeta-aurea";
-        tarjeta.style.borderTopColor = "var(--dorado)";
-        
-        tarjeta.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="id-pedido" style="font-size: 16px; font-weight: 800; color: var(--antracita);">${p.id}</span>
-                ${obtenerSemaforo(p.fecha)}
-            </div>
-
-            <h3 style="margin:10px 0 5px 0; color:var(--antracita); font-size: 18px;">📏 ${p.medida} <small style="font-size:12px; color:#888;">(${p.posicion})</small></h3>
-            <p style="margin:0 0 10px 0; font-size:15px;">👤 <strong>${p.nombre}</strong></p>
-            
-            <div class="caja-resaltada" style="margin-top:0; background:#fdfcf8; border: 1px solid var(--dorado); padding: 10px; border-radius: 6px;">
-                <strong style="font-size:11px; color:var(--oxido); display:block; margin-bottom:5px;">TEXTO A CALAR:</strong>
-                <span style="font-family: monospace; font-size: 16px; font-weight: 800; text-transform: uppercase;">${p.textos}</span>
-            </div>
-            
-            <div style="background:var(--gris-suave); padding:10px; border-radius:6px; font-size:12px; margin-top:10px; margin-bottom:15px; border-left:3px solid var(--antracita);">
-                <strong>PINTURA:</strong> Frente: ${p.frente} / Fondo: ${p.fondo}<br>
-                <strong>DESTINO:</strong> ${p.localidad}, ${p.provincia}
-            </div>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <a href="${p.linkPdf}" target="_blank" class="btn-aurea" style="background:#f8f9fa; color:#333; border:1px solid #ddd; text-align:center; text-decoration:none; padding: 10px;">📥 DESCARGAR PDF</a>
-                <button class="btn-aurea" style="background:#25d366; color:white; padding: 10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="enviarWhatsApp('${p.celular}', '${p.nombre}', '${p.linkPdf}')">💬 ENVIAR (Whatsapp)</button>
-            </div>
-            <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                <strong style="font-size: 11px; color: var(--oxido); display: block; margin-bottom: 5px;">📝 NOTAS / ERRORES:</strong>
-                <textarea id="nota-${p.fila}" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; resize: vertical; font-family: inherit;" placeholder="Si hay algún error, anotalo acá...">${p.observaciones || ''}</textarea>
-                <button style="width: 100%; background: #eee; color: #333; border: 1px solid #ccc; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 5px; font-weight: bold;" onclick="guardarNota(${p.fila})">💾 GUARDAR NOTA</button>
-            </div>
-
-            <div style="background:#fff9e6; border:1px solid #ffeeba; padding:15px; border-radius:8px; text-align:center;">
-                <strong style="font-size:12px; color:#8c5642; display:block; margin-bottom:10px;">¿Qué opción eligió?</strong>
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 1)">1</button>
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 2)">2</button>
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 3)">3</button>
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 4)">4</button>
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 5)">5</button>
-                    <button class="btn-aurea" style="padding:10px; font-size:14px; background:var(--dorado); color:var(--antracita); border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="confirmarModelo(${p.fila}, 6)">6</button>
-                </div>
-            </div>
-        `;
-        contenedor.appendChild(tarjeta);
+    pedidos.forEach(p => {
+        // Filtramos para mostrar solo pedidos válidos
+        if(p.id && p.id.trim() !== "") {
+            htmlDebug += `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #333;">`;
+            htmlDebug += `<strong>ID:</strong> ${p.id} <br>`;
+            htmlDebug += `<strong>Estado:</strong> "${p.estado}" <br>`;
+            htmlDebug += `<strong>Link PDF:</strong> "${p.linkPdf}"`;
+            htmlDebug += `</div>`;
+        }
     });
+    htmlDebug += `</div>`;
+    
+    contenedor.innerHTML = htmlDebug;
+    // --- MODO ESCÁNER FIN ---
 }
 
 // ==========================================
