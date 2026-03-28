@@ -62,7 +62,18 @@ function subirGcodeSemanal() {
     
     const lector = new FileReader();
     lector.onloadend = function() {
-        fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "subir_archivo", tipo: "semanal", nombreArchivo: archivo.name, mimeType: archivo.type, base64: lector.result })})
+        // fetch corregido sin no-cors
+        fetch(urlAppsScript, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ 
+                accion: "subir_archivo", 
+                tipo: "semanal", 
+                nombreArchivo: archivo.name, 
+                mimeType: archivo.type, 
+                base64: lector.result 
+            })
+        })
         .then(() => { 
             alert("✅ Archivo subido a la red."); 
             btn.innerText = "📤 Subir Archivo"; btn.disabled = false;
@@ -144,7 +155,7 @@ function renderizarTarjetas(pedidos) {
 function registrarPaso(fila, cb) {
     if (cb.checked) cb.parentElement.classList.add("tachado"); else cb.parentElement.classList.remove("tachado");
     let pasos = Array.from(document.getElementById(`lista-pasos-${fila}`).querySelectorAll('input:checked')).map(c => c.value).join(',');
-    fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
+    fetch(urlAppsScript, { method: 'POST',  body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
 }
 
 function finalizarPedido(fila) {
@@ -162,8 +173,7 @@ function finalizarPedido(fila) {
 
     // Enviamos a Google
     fetch(urlAppsScript, { 
-        method: 'POST', 
-        mode: 'no-cors', 
+        method: 'POST',  
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ accion: "marcar_terminado", fila: fila }) 
     })
@@ -187,7 +197,6 @@ function guardarNota(fila) {
 
     fetch(urlAppsScript, {
         method: 'POST',
-        mode: 'no-cors',
         body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
     }).then(() => {
         btn.innerText = "✅ ¡Guardado!";

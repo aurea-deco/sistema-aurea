@@ -119,22 +119,25 @@ function armarBuscador() {
     tabla.parentNode.insertBefore(buscadorDiv, tabla);
 }
 
-// Filtra la tabla basándose en lo que escribiste
 function filtrarYRenderizarTabla() {
+    // Si no hay pedidos cargados todavía, no hacemos nada
+    if (!pedidosGlobales || pedidosGlobales.length === 0) return;
+
     const inputBuscador = document.getElementById("input-buscador-aurea");
     const termino = inputBuscador ? inputBuscador.value.toLowerCase().trim() : "";
     
     let pedidosAMostrar = [];
 
     if (termino === "") {
-        // Si el buscador está vacío, mostramos solo los activos
-        pedidosAMostrar = pedidosGlobales.filter(p => p.estado !== "Entregado");
+        // Filtramos para NO mostrar los que ya se entregaron (así la lista es cortita)
+        pedidosAMostrar = pedidosGlobales.filter(p => p.estado && p.estado !== "Entregado");
     } else {
-        // Si hay texto, buscamos en TODOS los pedidos (historial completo)
+        // Buscador que no se tilda si un nombre o ID está vacío
         pedidosAMostrar = pedidosGlobales.filter(p => {
-            // Unimos todos los datos clave en un solo texto para buscar ahí
-            const datosCombinados = `${p.id} ${p.nombre} ${p.textos} ${p.medida} ${p.localidad} ${p.provincia} ${p.celular} ${p.estado} ${p.modelo}`.toLowerCase();
-            return datosCombinados.includes(termino);
+            const nom = p.nombre ? p.nombre.toLowerCase() : "";
+            const identificador = p.id ? p.id.toLowerCase() : "";
+            const textoCalar = p.textos ? p.textos.toLowerCase() : "";
+            return nom.includes(termino) || identificador.includes(termino) || textoCalar.includes(termino);
         });
     }
 
@@ -200,6 +203,7 @@ function cargarTablero() {
     const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
     
     fetch(urlFresca).then(res => res.json()).then(datos => {
+        pedidosGlobales = datos;
         
         const loading = document.getElementById("cargando");
         const tabla = document.getElementById("tabla-pedidos");

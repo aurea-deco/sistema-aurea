@@ -122,7 +122,7 @@ function renderizarTarjetas(pedidos) {
 function registrarPasoDespacho(fila, cb) {
     if (cb.checked) cb.parentElement.classList.add("tachado"); else cb.parentElement.classList.remove("tachado");
     let pasos = Array.from(document.getElementById(`lista-pasos-despacho-${fila}`).querySelectorAll('input:checked')).map(c => c.value).join(',');
-    fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
+    fetch(urlAppsScript, { method: 'POST',  body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
 }
 
 function despachar(fila, celular, nombre) {
@@ -135,27 +135,31 @@ function despachar(fila, celular, nombre) {
     
     const trackingCode = document.getElementById(`tracking-${fila}`).value.trim();
 
-    // TRUCO NINJA: Guardamos el tracking en la base de datos sin alterar la planilla
-    if (trackingCode !== "") {
-        let pasos = Array.from(document.getElementById(`lista-pasos-despacho-${fila}`).querySelectorAll('input:checked')).map(c => c.value);
-        pasos.push(`TRACKING_${trackingCode}`);
-        fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos.join(',') }) });
-    }
-
     const btn = document.getElementById(`btn-despachar-${fila}`); 
     btn.innerText = "⏳ Guardando..."; btn.disabled = true;
 
     const lector = new FileReader();
     lector.onloadend = function() {
-        fetch(urlAppsScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ accion: "subir_archivo", fila: fila, tipo: "rotulo", nombreArchivo: archivo.name, mimeType: archivo.type, base64: lector.result })})
+        // fetch corregido sin no-cors
+        fetch(urlAppsScript, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ 
+                accion: "subir_archivo", 
+                fila: fila, 
+                tipo: "rotulo", 
+                nombreArchivo: archivo.name, 
+                mimeType: archivo.type, 
+                base64: lector.result 
+            })
+        })
         .then(() => { 
             let tel = String(celular).replace(/\D/g, ""); if (tel.length === 10) tel = "549" + tel;
             let nom = nombre.split(" ")[0];
-            let msj = `¡Hola ${nom}! 👋%0A%0A¡Tu cartel ya está empacado y en camino! 🚀%0A%0AAcá te adjuntamos el comprobante.`;
+            let msj = `¡Hola ${nom}! 👋%0A%0A¡Tu cartel ya está empacado y en camino! 🚀`;
             if (trackingCode !== "") {
-                msj += `%0A%0ATu Código de Seguimiento es: *${trackingCode}*%0A%0APodés seguir el paquete desde la web de Correo Argentino acá:%0Ahttps://www.correoargentino.com.ar/formularios/e-commerce`;
+                msj += `%0A%0ATu Código de Seguimiento es: *${trackingCode}*`;
             }
-            msj += `%0A%0A¡Gracias por confiar en Áurea Deco! ✨`;
             window.open(`https://wa.me/${tel}?text=${msj}`, '_blank');
             location.reload(); 
         });
@@ -171,7 +175,6 @@ function guardarNota(fila) {
 
     fetch(urlAppsScript, {
         method: 'POST',
-        mode: 'no-cors',
         body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
     }).then(() => {
         btn.innerText = "✅ ¡Guardado!";

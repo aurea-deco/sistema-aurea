@@ -103,12 +103,24 @@ function procesarYSubirArchivo(fila, tipo) {
 
     const lector = new FileReader();
     lector.onloadend = function() {
+        // fetch corregido sin no-cors
         fetch(urlAppsScript, {
-            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ accion: "subir_archivo", fila: fila, tipo: tipo, nombreArchivo: archivo.name, mimeType: archivo.type, base64: lector.result })
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ 
+                accion: "subir_archivo", 
+                fila: fila, 
+                tipo: tipo, 
+                nombreArchivo: archivo.name, 
+                mimeType: archivo.type, 
+                base64: lector.result 
+            })
         }).then(() => { 
             alert("✅ Archivo subido."); 
             location.reload(); 
+        }).catch(err => {
+            alert("❌ Error de conexión.");
+            btn.innerText = "Reintentar"; btn.disabled = false;
         });
     };
     lector.readAsDataURL(archivo);
@@ -122,7 +134,7 @@ function guardarNota(fila) {
 
     fetch(urlAppsScript, {
         method: 'POST',
-        mode: 'no-cors',
+
         body: JSON.stringify({ accion: "guardar_observacion", fila: fila, obs: nota })
     }).then(() => {
         btn.innerText = "✅ ¡Guardado!";
