@@ -1,14 +1,114 @@
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec"; 
+// Activar el lector de PDFs
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-function obtenerSemaforo(fechaCruda) {
-    if (!fechaCruda) return "";
+// Función para leer el PDF y extraer el código
+async function extraerTNDelPDF(event, fila) {
+    const archivo = event.target.files[0];
+    if (!archivo || archivo.type !== "application/pdf") return;
+
+    const inputTracking = document.getElementById(`tracking-${fila}`);
+    if(inputTracking) inputTracking.value = "⏳ Leyendo..."; 
+
     try {
-        const dias = Math.floor((new Date() - new Date(fechaCruda)) / (1000 * 3600 * 24));
-        if (isNaN(dias)) return "";
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        const buffer = await archivo.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({data: buffer});
+        const pdf = await loadingTask.promise;
+        
+        let textoCompleto = "";
+        const paginasALeer = Math.min(pdf.numPages, 2);
+
+        for (let i = 1; i <= paginasALeer; i++) {
+            const pagina = await pdf.getPage(i);
+            const contenido = await pagina.getTextContent();
+            textoCompleto += contenido.items.map(item => item.str).join(" ");
+        }
+
+        // 1. Limpiamos espacios y guiones
+        const textoLimpio = textoCompleto.replace(/[\s-]/g, '').toUpperCase();
+        
+        // 2. NUEVA LUPA: Busca "TN" y captura todo el código alfanumérico largo que le sigue
+        const coincidencia = textoLimpio.match(/TN([A-Z0-9]{15,30})/);
+
+        if (coincidencia && coincidencia[1]) {
+            // coincidencia[1] tiene exactamente lo que va DESPUÉS del TN
+            if(inputTracking) inputTracking.value = coincidencia[1];
+        } else {
+            // Si por casualidad no encuentra el TN, intenta buscar el código corto T&T como plan B
+            const fallback = textoLimpio.match(/[A-Z]{2}\d{9}[A-Z]{2}/);
+            if (fallback) {
+                if(inputTracking) inputTracking.value = fallback[0];
+            } else {
+                if(inputTracking) inputTracking.value = "";
+                alert("⚠️ No encontré el código automático. Cargalo a mano.");
+            }
+        }
+    } catch (error) {
+        console.error("Error PDF:", error);
+        if(inputTracking) inputTracking.value = "";
+    }
+}
+
+// CALENDARIO DE FERIADOS ARGENTINOS (Fijos y estimativos)
+const feriados = [
+    "01-01", // Año Nuevo
+    "02-16", // Carnaval (Ejemplo)
+    "02-17", // Carnaval (Ejemplo)
+    "03-24", // Día de la Memoria
+    "04-02", // Malvinas
+    "04-03", // Viernes Santo
+    "05-01", // Día del Trabajador
+    "05-25", // Revolución de Mayo
+    "06-17", // Güemes
+    "06-20", // Día de la Bandera
+    "07-09", // Día de la Independencia
+    "08-17", // San Martín
+    "10-12", // Diversidad Cultural
+    "11-20", // Soberanía Nacional
+    "12-08", // Inmaculada Concepción
+    "12-25"  // Navidad
+];
+
+// Ahora recibe la fecha Y el estado
+function obtenerSemaforo(fechaCruda, estadoActual) {
+    if (!fechaCruda) return "";
+    
+    // Si ya está despachado, mostramos el tilde verde y cortamos
+    if (estadoActual && (estadoActual.toLowerCase().includes("despacho") || estadoActual.toLowerCase().includes("entregado") || estadoActual.toLowerCase().includes("finalizado"))) {
+        return `<span style="background:#17a2b8; color:white; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">✅ DESPACHADO</span>`;
+    }
+
+    try {
+        let fechaInicio = new Date(fechaCruda);
+        let hoy = new Date();
+        
+        let diasHabiles = 0;
+        let temp = new Date(fechaInicio);
+        
+        while (temp < hoy) {
+            temp.setDate(temp.getDate() + 1);
+            
+            let mes = String(temp.getMonth() + 1).padStart(2, '0');
+            let dia = String(temp.getDate()).padStart(2, '0');
+            let diaMes = `${mes}-${dia}`;
+            
+            let esFinde = temp.getDay() === 0 || temp.getDay() === 6;
+            let esFeriado = feriados.includes(diaMes);
+
+            if (!esFinde && !esFeriado) { 
+                diasHabiles++;
+            }
+        }
+
         let bg = "#28a745", color = "white"; 
-        if (dias >= 10) { bg = "#dc3545"; color = "white"; } 
-        else if (dias >= 7) { bg = "#ffc107"; color = "#333"; } 
-        return `<span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold;">⏳ ${dias} DÍAS</span>`;
+        if (diasHabiles >= 7) { bg = "#dc3545"; color = "white"; } 
+        else if (diasHabiles >= 5) { bg = "#ffc107"; color = "#333"; } 
+        
+        return `<span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⏳ ${diasHabiles} DÍAS HÁBILES</span>`;
     } catch(e) { return ""; }
 }
 
@@ -52,7 +152,7 @@ function renderizarTarjetas(pedidos) {
                 <span class="id-pedido">${p.id}</span>
                 <div style="display:flex; gap:5px;">
                     <span style="background:var(--antracita); color:var(--dorado); padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold;">${p.tipoEnvio.toUpperCase()}</span>
-                    ${obtenerSemaforo(p.fecha)}
+                    ${obtenerSemaforo(p.fecha, p.estado)}
                 </div>
             </div>
             
@@ -100,7 +200,7 @@ function renderizarTarjetas(pedidos) {
 
                 <div style="margin-bottom: 15px; background: #e9ecef; padding: 10px; border-radius: 6px;">
                     <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">CÓDIGO DE SEGUIMIENTO:</label>
-                    <input type="text" id="tracking-${p.fila}" value="${p.tracking || ''}" placeholder="Ej: SD123456789AR" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing:border-box; font-family: 'Montserrat'; font-weight: bold; text-transform: uppercase;">
+                    <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf" style="width:100%; margin-bottom:10px;" onchange="extraerTNDelPDF(event, ${p.fila})"> 
                     <a href="https://www.correoargentino.com.ar/formularios/e-commerce" target="_blank" style="display:block; text-align:right; font-size:10px; color:#0056b3; margin-top:5px; text-decoration:none; font-weight:bold;">🔗 Rastrear en Correo Argentino</a>
                 </div>
                 <button onclick="marcarEntregado('${p.id}')" style="width:100%; background:#20c997; color:white; padding:12px; border-radius:6px; font-size:14px; font-weight:900; border:none; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2);">📦 MARCAR COMO ENTREGADO</button>
@@ -112,7 +212,9 @@ function renderizarTarjetas(pedidos) {
                     <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">2. CÓDIGO DE SEGUIMIENTO:</label>
                     <input type="text" id="tracking-${p.fila}" value="${p.tracking || ''}" placeholder="Se autocompleta al subir el PDF..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing:border-box; font-family: 'Montserrat'; font-weight: bold; text-transform: uppercase;">
                 </div>
-                <button class="btn-aurea" id="btn-despachar-${p.fila}" style="width:100%; background:#25d366; color:white; padding:12px; font-size:14px; border-radius:6px; font-weight:900; border:none; cursor:pointer;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}')">💬 DESPACHAR Y AVISAR</button>
+                <button class="btn-rojo" style="width:100%; padding:10px; font-size:14px; margin-top:15px;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}', this)">
+    📦 DESPACHAR Y AVISAR
+</button>
             `}
         `;
         contenedor.appendChild(tarjeta);
@@ -125,24 +227,46 @@ function registrarPasoDespacho(fila, cb) {
     fetch(urlAppsScript, { method: 'POST',  body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
 }
 
-function despachar(fila, celular, nombre) {
-    // ... (tus validaciones del principio quedan igual)
+// Agregamos "botonElemento" al final
+function despachar(fila, celular, nombre, botonElemento) {
+    const inputArchivo = document.getElementById(`archivo-rotulo-${fila}`);
+    const archivo = inputArchivo ? inputArchivo.files[0] : null;
+    
+    if(!archivo) return alert("⚠️ Subí el comprobante del correo primero.");
+    
+    const inputTracking = document.getElementById(`tracking-${fila}`);
+    let trackingCode = inputTracking ? inputTracking.value.trim() : "";
+
+    if (botonElemento) {
+        botonElemento.innerText = "⏳ Guardando..."; 
+        botonElemento.disabled = true;
+    }
+
     const lector = new FileReader();
     lector.onloadend = function() {
         fetch(urlAppsScript, { 
             method: 'POST', 
-            mode: 'no-cors', // 👈 Vuelve el modo silencioso
+            mode: 'no-cors',
             body: JSON.stringify({ 
                 accion: "subir_archivo", 
                 fila: fila, 
                 tipo: "rotulo", 
                 nombreArchivo: archivo.name, 
                 mimeType: archivo.type, 
-                base64: lector.result 
+                base64: lector.result,
+                tracking: trackingCode
             })
-        }).then(() => { 
-            alert("✅ Rótulo enviado.");
+        })
+        .then(() => { 
+            // Solo refresca para que el pedido desaparezca y se archive
             location.reload(); 
+        })
+        .catch(err => {
+            alert("❌ Error al guardar.");
+            if (botonElemento) {
+                botonElemento.innerText = "Reintentar"; 
+                botonElemento.disabled = false;
+            }
         });
     };
     lector.readAsDataURL(archivo);
@@ -303,56 +427,5 @@ async function imprimirRotuloDoble(linkDrive, event) {
     } finally {
         btn.innerText = textoOriginal;
         btn.disabled = false;
-    }
-}
-// ==========================================
-// MÓDULO LOGÍSTICA: EXTRAER TRACKING AUTO
-// ==========================================
-async function leerTrackingLocal(input, fila) {
-    if (!input.files || input.files.length === 0) return;
-    
-    const file = input.files[0];
-    if (file.type !== "application/pdf") return;
-
-    const inputTracking = document.getElementById(`tracking-${fila}`);
-    inputTracking.placeholder = "Buscando código...";
-
-    try {
-        // Configuramos el motor lector de PDF
-        if (!window.pdfjsLib) {
-            inputTracking.placeholder = "Falta motor PDF.js en HTML";
-            return;
-        }
-        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
-        }
-
-        // Leemos el archivo en memoria antes de subirlo
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        
-        // El código del Correo Argentino siempre está en la primera carilla
-        const pagina = await pdf.getPage(1);
-        const contenido = await pagina.getTextContent();
-        
-        // Unimos todas las palabras sueltas del PDF en un solo texto gigante
-        const textoCompleto = contenido.items.map(item => item.str).join(" ");
-        
-        // 🔎 RASTREADOR: Busca 2 letras, 9 números y 2 letras (Ej: HC398625165AR)
-        const regex = /[A-Z]{2}\d{9}[A-Z]{2}/i;
-        const match = textoCompleto.match(regex);
-
-        if (match) {
-            inputTracking.value = match[0].toUpperCase();
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("✅ Tracking extraído automáticamente.");
-            }
-        } else {
-            inputTracking.placeholder = "Código no detectado. Ingresar manual.";
-        }
-
-    } catch (error) {
-        console.error("Error leyendo PDF:", error);
-        inputTracking.placeholder = "Error al leer PDF. Ingresar manual.";
     }
 }

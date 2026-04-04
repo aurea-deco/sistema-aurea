@@ -25,26 +25,77 @@ let pedidosGlobales = [];
     document.head.appendChild(estilo);
 })();
 
+// CALENDARIO DE FERIADOS ARGENTINOS (Fijos y estimativos)
+const feriados = [
+    "01-01", // Año Nuevo
+    "02-16", // Carnaval (Ejemplo)
+    "02-17", // Carnaval (Ejemplo)
+    "03-24", // Día de la Memoria
+    "04-02", // Malvinas
+    "04-03", // Viernes Santo
+    "05-01", // Día del Trabajador
+    "05-25", // Revolución de Mayo
+    "06-17", // Güemes
+    "06-20", // Día de la Bandera
+    "07-09", // Día de la Independencia
+    "08-17", // San Martín
+    "10-12", // Diversidad Cultural
+    "11-20", // Soberanía Nacional
+    "12-08", // Inmaculada Concepción
+    "12-25"  // Navidad
+];
 // ==========================================
 // CÁLCULO DE TIEMPO Y SEMÁFORO
 // ==========================================
-function calcularSemaforo(fechaCruda) {
+// Ahora recibe la fecha Y el estado del pedido
+function calcularSemaforo(fechaCruda, estadoActual) {
     if (!fechaCruda) return "<span style='color:#999; font-size:11px;'>Sin fecha</span>";
+    
+    // Si ya está despachado o terminado, cortamos el reloj acá nomás
+    if (estadoActual && (estadoActual.toLowerCase().includes("despacho") || estadoActual.toLowerCase().includes("entregado") || estadoActual.toLowerCase().includes("finalizado"))) {
+        return `
+            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-family:'Montserrat', sans-serif;">
+                <span style="font-size:11px; font-weight:600; color:#888;">Proceso terminado</span>
+                <span style="background:#17a2b8; color:white; padding:3px 7px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">
+                    ✅ DESPACHADO
+                </span>
+            </div>
+        `;
+    }
+
     try {
         const fechaIngreso = new Date(fechaCruda);
         const hoy = new Date();
-        const diasTranscurridos = Math.floor((hoy.getTime() - fechaIngreso.getTime()) / (1000 * 3600 * 24));
+        
+        let diasTranscurridos = 0;
+        let temp = new Date(fechaIngreso);
+        
+        while (temp < hoy) {
+            temp.setDate(temp.getDate() + 1);
+            
+            let mes = String(temp.getMonth() + 1).padStart(2, '0');
+            let dia = String(temp.getDate()).padStart(2, '0');
+            let diaMes = `${mes}-${dia}`;
+            
+            let esFinde = temp.getDay() === 0 || temp.getDay() === 6;
+            let esFeriado = feriados.includes(diaMes);
+
+            if (!esFinde && !esFeriado) { 
+                diasTranscurridos++;
+            }
+        }
 
         let colorFondo = "#28a745"; let colorTexto = "white"; let estadoTiempo = "A Tiempo";
-        if (diasTranscurridos >= 10) { colorFondo = "#dc3545"; estadoTiempo = "Demorado"; } 
-        else if (diasTranscurridos >= 7) { colorFondo = "#ffc107"; colorTexto = "#333"; estadoTiempo = "Atención"; }
+        
+        if (diasTranscurridos >= 7) { colorFondo = "#dc3545"; estadoTiempo = "Demorado"; } 
+        else if (diasTranscurridos >= 5) { colorFondo = "#ffc107"; colorTexto = "#333"; estadoTiempo = "Atención"; }
 
         const fechaFormateada = fechaIngreso.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
         return `
             <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-family:'Montserrat', sans-serif;">
                 <span style="font-size:11px; font-weight:600; color:#888;">Ingresó el ${fechaFormateada}</span>
                 <span style="background:${colorFondo}; color:${colorTexto}; padding:3px 7px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">
-                    ⏳ ${diasTranscurridos} DÍAS - ${estadoTiempo.toUpperCase()}
+                    ⏳ ${diasTranscurridos} DÍAS HÁBILES - ${estadoTiempo.toUpperCase()}
                 </span>
             </div>
         `;
@@ -190,7 +241,7 @@ function renderizarTablaHTML(pedidos) {
                         </span>
                     </div>
                 </td>
-                <td style="vertical-align: top; padding:15px;">${calcularSemaforo(p.fecha)}</td>
+                <td style="vertical-align: top; padding:15px;">${calcularSemaforo(p.fecha, p.estado)}</td>
             </tr>
         `;
     });
@@ -613,19 +664,17 @@ function guardarEdicion(idBuscado) {
 // MÓDULO LOGÍSTICA: MARCAR ENTREGADO (ARCHIVAR)
 // ==========================================
 function marcarEntregado(idPedido) {
-    if (confirm(`📦 ¿Confirmás que el pedido ${idPedido} ya fue ENTREGADO al cliente?\n\nEsto lo retirará de la planta y borrará la fila de la base de datos activa.`)) {
+    if (confirm(`📦 ¿Confirmás que el pedido ${idPedido} ya fue ENTREGADO al cliente?\n\nEsto lo moverá al Histórico y limpiará la planta.`)) {
         cerrarDetalle();
         
-        // Enviamos la misma orden de "borrar" al Apps Script que armamos antes
+        // Fíjate que acá ahora dice accion: "archivar"
         fetch(urlAppsScript, {
             method: 'POST',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ accion: "borrar", id: idPedido })
+            body: JSON.stringify({ accion: "archivar", id: idPedido })
         })
         .then(() => {
             setTimeout(() => {
-                alert("🎉 ¡Excelente! Pedido entregado y archivado exitosamente.");
+                alert("🎉 ¡Excelente! Pedido archivado en el Histórico exitosamente.");
                 cargarTablero(); 
             }, 1000);
         })

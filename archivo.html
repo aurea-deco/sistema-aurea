@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Archivo Histórico - Áurea Deco</title>
+    <link rel="stylesheet" href="estilos.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
+
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📁 Historial de Pedidos</h1>
+            <a href="portal.html" class="btn-volver">Volver al Portal</a>
+        </header>
+
+        <input type="text" id="buscador" placeholder="Buscar por nombre o ID..." onkeyup="filtrarArchivo()">
+
+        <table id="tabla-archivo">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Detalle</th>
+                    <th>Links</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-archivo">
+            </tbody>
+        </table>
+    </div>
+    <script src="archivo.js"></script>
+</body>
+
+</html>
