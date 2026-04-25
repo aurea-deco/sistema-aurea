@@ -1,6 +1,5 @@
 // ⚠️ PEGA TU LINK DE APPS SCRIPT ACÁ:
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec"; 
-
 // ==========================================
 // CEREBRO LECTOR V2.1 (AJUSTE SUCURSAL Y FILTROS)
 // ==========================================
@@ -76,7 +75,7 @@ function procesarTexto() {
     let matchDatos = txtUnido.match(/(?:Datos|Texto|Número|Numero|Detalle)s?\s*[:\-]?\s*([^|]+)/i);
     if (matchDatos) textos = matchDatos[1].trim();
 
-    // CALLE: Excluimos explícitamente las palabras de diseño (Datos, Texto, Número)
+    // CALLE: Excluimos explícitamente las palabras de diseño
     for (let l of lineas) {
         let upperL = l.toUpperCase();
         if (l.length > 5 && l !== nombre && l !== loc && upperL !== prov.toUpperCase() && l !== tel &&
@@ -112,7 +111,7 @@ function procesarTexto() {
     inyectar("provincia", prov);
     inyectar("localidad", loc);
     inyectar("cp", cp);
-    inyectar("calle", direccion); // Ahora si es sucursal, entra vacío
+    inyectar("calle", direccion); 
     
     inyectar("medidas", medida);
     inyectar("posicion", posicion);
@@ -123,7 +122,30 @@ function procesarTexto() {
     inyectar("fecha-ingreso", new Date().toLocaleDateString('es-AR'));
 
     alert("✅ ¡Auto-completado exitoso! Revisá que todos los datos estén en su lugar.");
-}
+    
+    // RADAR VIP: Si encontró un DNI, consulta el historial
+    if (dni !== "") {
+        fetch(urlAppsScript, {
+            method: 'POST',
+            body: JSON.stringify({ accion: "verificar_vip", dni: dni })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.compras >= 2) { 
+                const alertaVip = document.getElementById("alerta-vip");
+                if (alertaVip) {
+                    document.getElementById("texto-vip").innerText = `El DNI ${dni} ya registra ${data.compras} compras previas. ¡Esta es su compra número ${data.compras + 1}! Considerá ofrecerle un beneficio.`;
+                    alertaVip.style.display = "block";
+                }
+                alert(`🌟 ¡ATENCIÓN: CLIENTE FRECUENTE!\n\nEste cliente ya compró ${data.compras} veces anteriores. ¡Hora de un regalo o descuento!`);
+            } else {
+                if (document.getElementById("alerta-vip")) {
+                    document.getElementById("alerta-vip").style.display = "none";
+                }
+            }
+        });
+    }
+} // <---- ¡ESTA ERA LA LLAVE MÁGICA QUE FALTABA! Cierra procesarTexto()
 
 // 2. GUARDAR EN GOOGLE SHEETS
 function guardarPedido() {
@@ -150,7 +172,8 @@ function guardarPedido() {
         monto: document.getElementById('monto').innerText,
         dni: document.getElementById('dni').innerText,
         cp: document.getElementById('cp').innerText,
-        tipoEnvio: tipoEnvio
+        tipoEnvio: tipoEnvio,
+        medioPago: document.getElementById("medio-pago").value
     };
 
     if (!datosParaGuardar.nombre) {
@@ -158,7 +181,6 @@ function guardarPedido() {
         return;
     }
 
-    // ACÁ ESTABA EL ERROR: Ahora busca el botón correctamente sin importar cómo se llame su clase
     const btn = document.querySelector('button[onclick="guardarPedido()"]');
     if (btn) {
         btn.innerText = "⏳ Guardando...";
@@ -180,13 +202,8 @@ function guardarPedido() {
         
         setTimeout(() => {
             document.getElementById('texto-whatsapp').value = "";
-            if (btn) {
-                btn.innerText = "💾 Guardar en Sistema";
-                btn.style.backgroundColor = "var(--antracita)";
-                btn.style.color = "var(--dorado)";
-                btn.disabled = false;
-            }
-        }, 3000);
+            location.reload(); // Es mejor que limpie toda la página recargándola
+        }, 2000);
     })
     .catch(error => {
         alert("❌ Error de conexión.");
@@ -196,6 +213,7 @@ function guardarPedido() {
         }
     });
 }
+
 // ==========================================
 // SISTEMA DE NOTIFICACIONES FLOTANTES (TOASTS)
 // ==========================================
@@ -210,16 +228,13 @@ function mostrarNotificacion(mensaje, tipo = "exito") {
     const toast = document.createElement("div");
     toast.className = `toast-aurea ${tipo}`;
     
-    // Si es éxito pone un tilde verde gigante, si es error pone una cruz roja
     let icono = tipo === "error" ? "❌" : "✅";
 
     toast.innerHTML = `<span style="font-size: 24px;">${icono}</span> <span>${mensaje}</span>`;
     contenedor.appendChild(toast);
 
-    // Animación de entrada
     setTimeout(() => toast.classList.add("mostrar"), 10);
 
-    // Se va solo a los 3.5 segundos
     setTimeout(() => {
         toast.classList.remove("mostrar");
         setTimeout(() => toast.remove(), 400); 

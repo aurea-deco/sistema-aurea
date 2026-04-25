@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Archivo Histórico - Áurea Deco</title>
+    <title>Facturación - Áurea Deco</title>
     <link rel="stylesheet" href="estilos.css">
         <link rel="icon" type="image/png" href="favicon.png">
     <style>
@@ -12,20 +12,20 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f4f7f6;
-            /* Mismo fondo gris clarito del portal */
             color: #333;
             margin: 0;
             padding: 30px 20px;
         }
 
         .contenedor-moderno {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             background: #ffffff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            /* Sombra suave como en las tarjetas */
+            border-top: 5px solid #17a2b8;
+            /* Rayita celeste arriba */
         }
 
         header {
@@ -34,7 +34,7 @@
             align-items: center;
             border-bottom: 2px solid #f0f0f0;
             padding-bottom: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         h1 {
@@ -59,25 +59,14 @@
             background: #1a252f;
         }
 
-        .buscador {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
+        .subtitulo {
+            text-align: left;
+            color: #6c757d;
             font-size: 14px;
-            font-family: 'Montserrat', sans-serif;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            background-color: #fcfcfc;
+            margin-bottom: 25px;
         }
 
-        .buscador:focus {
-            outline: none;
-            border-color: #0056b3;
-            background-color: #fff;
-        }
-
-        /* Estilos de la Tabla */
+        /* Estilos de la Tabla de Facturación */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -112,21 +101,9 @@
             background-color: #f8f9fa;
         }
 
-        /* Formato para los links de PDF y Rótulo */
-        td a {
-            text-decoration: none;
-            background: #e2e8f0;
-            color: #2b6cb0;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 11px;
-            margin-right: 5px;
-            display: inline-block;
-        }
-
-        td a:hover {
-            background: #cbd5e0;
+        /* Estilos extra para botones internos de la tabla */
+        button {
+            font-family: 'Montserrat', sans-serif;
         }
     </style>
 </head>
@@ -134,31 +111,35 @@
 <body>
     <div class="contenedor-moderno">
         <header>
-            <h1>📁 Historial de Pedidos</h1>
+            <h1>🧾 Centro de Facturación</h1>
             <a href="portal.html" class="btn-volver">Volver al Portal</a>
         </header>
 
-        <input type="text" id="buscador" class="buscador" placeholder="🔍 Buscar por nombre, ID o localidad..."
-            onkeyup="filtrarArchivo()">
+        <p class="subtitulo">
+            Mostrando pedidos despachados abonados por <b>Transferencia Bancaria</b>, listos para emitir comprobante en
+            ARCA.
+        </p>
 
-        <table id="tabla-archivo">
+        <table id="tabla-facturas">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Fecha</th>
                     <th>Cliente</th>
-                    <th>Detalle</th>
-                    <th>Archivos</th>
+                    <th>DNI / CUIT</th>
+                    <th>Concepto</th>
+                    <th>Monto a Facturar</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="cuerpo-archivo">
+            <tbody id="cuerpo-facturas">
                 <tr>
-                    <td colspan="5" style="text-align:center;">Cargando historial...</td>
+                    <td colspan="6" style="text-align: center; padding: 30px;">Cargando datos...</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <script src="archivo.js"></script>
+
+    <script src="facturacion.js"></script>
 </body>
 
 </html>

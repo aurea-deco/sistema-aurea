@@ -292,7 +292,11 @@
                 FICHA DE<br>PEDIDO
             </div>
         </header>
-
+        <div id="alerta-vip"
+            style="display: none; background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 2px dashed #ffc107; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 5px 0; font-size: 18px; font-weight: 900;">🌟 ¡CLIENTE FRECUENTE! 🌟</h3>
+            <p id="texto-vip" style="margin: 0; font-size: 14px; font-weight: bold;"></p>
+        </div>
         <div class="titulo-barra">DATOS DEL CLIENTE</div>
 
         <div class="fila-dato">
@@ -386,6 +390,15 @@
                 <div class="caja-cuadrada">
                     <strong>MONTO A FACTURAR C/ENVÍO</strong>
                     <div class="valor-caja" id="monto" contenteditable="true"></div>
+                </div>
+                <div class="caja-cuadrada">
+                    <strong>MEDIO DE PAGO</strong>
+                    <select id="medio-pago" class="valor-caja"
+                        style="width: 100%; border: none; background: transparent; cursor: pointer; outline: none; font-family: inherit; font-size: inherit;">
+                        <option value="Efectivo">💵 Efectivo</option>
+                        <option value="Transferencia Bancaria">🏦 Transferencia</option>
+                        <option value="Mercado Pago">📱 Mercado Pago</option>
+                    </select>
                 </div>
                 <div class="caja-cuadrada">
                     <strong>MODELO A FABRICAR</strong>

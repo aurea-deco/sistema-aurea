@@ -1,76 +1,9 @@
 const urlAppsScript = "https://script.google.com/macros/s/AKfycbxC4Q2rPVwBMbdBdEhQVCIjPm_YxPucKJ6eS0fcKL1we734KNuCusPWzWnydWcyyP4Nyw/exec"; 
-// Activar el lector de PDFs
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-// Función para leer el PDF y extraer el código
-async function extraerTNDelPDF(event, fila) {
-    const archivo = event.target.files[0];
-    if (!archivo || archivo.type !== "application/pdf") return;
-
-    const inputTracking = document.getElementById(`tracking-${fila}`);
-    if(inputTracking) inputTracking.value = "⏳ Leyendo..."; 
-
-    try {
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-        const buffer = await archivo.arrayBuffer();
-        const loadingTask = pdfjsLib.getDocument({data: buffer});
-        const pdf = await loadingTask.promise;
-        
-        let textoCompleto = "";
-        const paginasALeer = Math.min(pdf.numPages, 2);
-
-        for (let i = 1; i <= paginasALeer; i++) {
-            const pagina = await pdf.getPage(i);
-            const contenido = await pagina.getTextContent();
-            textoCompleto += contenido.items.map(item => item.str).join(" ");
-        }
-
-        // 1. Limpiamos espacios y guiones
-        const textoLimpio = textoCompleto.replace(/[\s-]/g, '').toUpperCase();
-        
-        // 2. NUEVA LUPA: Busca "TN" y captura todo el código alfanumérico largo que le sigue
-        const coincidencia = textoLimpio.match(/TN([A-Z0-9]{15,30})/);
-
-        if (coincidencia && coincidencia[1]) {
-            // coincidencia[1] tiene exactamente lo que va DESPUÉS del TN
-            if(inputTracking) inputTracking.value = coincidencia[1];
-        } else {
-            // Si por casualidad no encuentra el TN, intenta buscar el código corto T&T como plan B
-            const fallback = textoLimpio.match(/[A-Z]{2}\d{9}[A-Z]{2}/);
-            if (fallback) {
-                if(inputTracking) inputTracking.value = fallback[0];
-            } else {
-                if(inputTracking) inputTracking.value = "";
-                alert("⚠️ No encontré el código automático. Cargalo a mano.");
-            }
-        }
-    } catch (error) {
-        console.error("Error PDF:", error);
-        if(inputTracking) inputTracking.value = "";
-    }
-}
 
 // CALENDARIO DE FERIADOS ARGENTINOS (Fijos y estimativos)
 const feriados = [
-    "01-01", // Año Nuevo
-    "02-16", // Carnaval (Ejemplo)
-    "02-17", // Carnaval (Ejemplo)
-    "03-24", // Día de la Memoria
-    "04-02", // Malvinas
-    "04-03", // Viernes Santo
-    "05-01", // Día del Trabajador
-    "05-25", // Revolución de Mayo
-    "06-17", // Güemes
-    "06-20", // Día de la Bandera
-    "07-09", // Día de la Independencia
-    "08-17", // San Martín
-    "10-12", // Diversidad Cultural
-    "11-20", // Soberanía Nacional
-    "12-08", // Inmaculada Concepción
-    "12-25"  // Navidad
+    "01-01", "02-16", "02-17", "03-24", "04-02", "04-03", "05-01", "05-25", 
+    "06-17", "06-20", "07-09", "08-17", "10-12", "11-20", "12-08", "12-25"
 ];
 
 // Ahora recibe la fecha Y el estado
@@ -190,7 +123,7 @@ function renderizarTarjetas(pedidos) {
             
             ${yaDespachado ? `
                 <div style="background:#d4edda; padding:10px; border-radius:6px; margin-bottom:15px; border: 1px solid #c3e6cb;">
-                    <strong style="color:#155724; font-size:12px; display:block; text-align:center;">✅ Paquete en tránsito</strong>
+                    <strong style="color:#155724; font-size:12px; display:block; text-align:center;">✅ Paquete en tránsito o Entregado</strong>
                     ${p.linkRotulo ? `
                         <div style="margin-top:10px;">
                             <button onclick="imprimirRotuloDoble('${p.linkRotulo}', event)" style="width:100%; background:#0056b3; color:white; padding:10px; border-radius:4px; font-size:12px; font-weight:bold; border:none; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🖨️ IMPRIMIR DOBLE (2x Hoja)</button>
@@ -200,21 +133,26 @@ function renderizarTarjetas(pedidos) {
 
                 <div style="margin-bottom: 15px; background: #e9ecef; padding: 10px; border-radius: 6px;">
                     <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">CÓDIGO DE SEGUIMIENTO:</label>
-                    <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf" style="width:100%; margin-bottom:10px;" onchange="extraerTNDelPDF(event, ${p.fila})"> 
+                    <input type="text" value="${p.tracking || 'Sin tracking cargado'}" readonly style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing:border-box; font-family: 'Montserrat'; font-weight: bold;">
                     <a href="https://www.correoargentino.com.ar/formularios/e-commerce" target="_blank" style="display:block; text-align:right; font-size:10px; color:#0056b3; margin-top:5px; text-decoration:none; font-weight:bold;">🔗 Rastrear en Correo Argentino</a>
                 </div>
-                <button onclick="marcarEntregado('${p.id}')" style="width:100%; background:#20c997; color:white; padding:12px; border-radius:6px; font-size:14px; font-weight:900; border:none; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2);">📦 MARCAR COMO ENTREGADO</button>
+                <button onclick="marcarEntregado('${p.id}')" style="width:100%; background:#20c997; color:white; padding:12px; border-radius:6px; font-size:14px; font-weight:900; border:none; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2);">📦 MOVER AL ARCHIVO</button>
             ` : `
                 <div style="background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom:15px;">
-                    <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">1. SUBIR RÓTULO (PDF):</label>
-                    <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf" style="width:100%; margin-bottom:10px; font-size:12px;" onchange="leerTrackingLocal(this, ${p.fila})">
+                    <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">1. SUBIR RÓTULO (PDF - Solo envíos):</label>
+                    <input type="file" id="archivo-rotulo-${p.fila}" accept=".pdf" style="width:100%; margin-bottom:10px; font-size:12px;">
                     
-                    <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">2. CÓDIGO DE SEGUIMIENTO:</label>
-                    <input type="text" id="tracking-${p.fila}" value="${p.tracking || ''}" placeholder="Se autocompleta al subir el PDF..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing:border-box; font-family: 'Montserrat'; font-weight: bold; text-transform: uppercase;">
+                    <label style="font-size: 11px; font-weight: bold; color: #444; display:block; margin-bottom:5px;">2. N° DE SEGUIMIENTO (Pegar manual):</label>
+                    <input type="text" id="tracking-${p.fila}" value="${p.tracking || ''}" placeholder="Ej: CP123456789AR" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing:border-box; font-family: 'Montserrat'; font-weight: bold; text-transform: uppercase;">
                 </div>
-                <button class="btn-rojo" style="width:100%; padding:10px; font-size:14px; margin-top:15px;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}', this)">
-    📦 DESPACHAR Y AVISAR
-</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-rojo" style="flex: 1; padding:10px; font-size:13px;" onclick="despachar(${p.fila}, '${p.celular}', '${p.nombre}', this)">
+                        📦 POR CORREO
+                    </button>
+                    <button style="flex: 1; padding:10px; font-size:13px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="entregarLocal('${p.id}', this)">
+                        🏠 RETIRO LOCAL
+                    </button>
+                </div>
             `}
         `;
         contenedor.appendChild(tarjeta);
@@ -227,7 +165,7 @@ function registrarPasoDespacho(fila, cb) {
     fetch(urlAppsScript, { method: 'POST',  body: JSON.stringify({ accion: "guardar_progreso", fila: fila, progreso: pasos }) });
 }
 
-// Agregamos "botonElemento" al final
+// Opción 1: Enviar por correo (Requiere PDF para guardarlo en la nube)
 function despachar(fila, celular, nombre, botonElemento) {
     const inputArchivo = document.getElementById(`archivo-rotulo-${fila}`);
     const archivo = inputArchivo ? inputArchivo.files[0] : null;
@@ -258,19 +196,42 @@ function despachar(fila, celular, nombre, botonElemento) {
             })
         })
         .then(() => { 
-            // Solo refresca para que el pedido desaparezca y se archive
             location.reload(); 
         })
         .catch(err => {
             alert("❌ Error al guardar.");
             if (botonElemento) {
-                botonElemento.innerText = "Reintentar"; 
+                botonElemento.innerText = "📦 POR CORREO"; 
                 botonElemento.disabled = false;
             }
         });
     };
     lector.readAsDataURL(archivo);
 }
+
+// Opción 2: Retiro en Local (No pide PDF, cambia el estado y lo manda al Histórico)
+function entregarLocal(idPedido, botonElemento) {
+    if (confirm(`🏠 ¿Confirmás que el cliente ya retiró el pedido ${idPedido} en el taller?\n\nEsto lo marcará como Entregado y lo enviará al Archivo Histórico.`)) {
+        if (botonElemento) {
+            botonElemento.innerText = "⏳ Archivando..."; 
+            botonElemento.disabled = true;
+        }
+
+        fetch(urlAppsScript, {
+            method: 'POST',
+            body: JSON.stringify({ accion: "entrega_local", id: idPedido })
+        })
+        .then(() => { location.reload(); })
+        .catch(err => {
+            alert("❌ Error al archivar.");
+            if (botonElemento) {
+                botonElemento.innerText = "🏠 RETIRO LOCAL"; 
+                botonElemento.disabled = false;
+            }
+        });
+    }
+}
+
 function guardarNota(fila) {
     const nota = document.getElementById(`nota-${fila}`).value;
     const btn = event.target;
@@ -286,6 +247,7 @@ function guardarNota(fila) {
         setTimeout(() => { btn.innerText = textoOriginal; btn.disabled = false; }, 2000);
     });
 }
+
 // ==========================================
 // SISTEMA DE NOTIFICACIONES FLOTANTES (TOASTS)
 // ==========================================
@@ -300,21 +262,19 @@ function mostrarNotificacion(mensaje, tipo = "exito") {
     const toast = document.createElement("div");
     toast.className = `toast-aurea ${tipo}`;
     
-    // Si es éxito pone un tilde verde gigante, si es error pone una cruz roja
     let icono = tipo === "error" ? "❌" : "✅";
 
     toast.innerHTML = `<span style="font-size: 24px;">${icono}</span> <span>${mensaje}</span>`;
     contenedor.appendChild(toast);
 
-    // Animación de entrada
     setTimeout(() => toast.classList.add("mostrar"), 10);
 
-    // Se va solo a los 3.5 segundos
     setTimeout(() => {
         toast.classList.remove("mostrar");
         setTimeout(() => toast.remove(), 400); 
     }, 3500);
 }
+
 // ==========================================
 // MÓDULO LOGÍSTICA: MARCAR ENTREGADO (ARCHIVAR)
 // ==========================================
@@ -330,12 +290,13 @@ function marcarEntregado(idPedido) {
         .then(() => {
             setTimeout(() => {
                 alert("🎉 ¡Excelente! Pedido archivado exitosamente.");
-                cargarDatosSeguros(); // Recarga la tabla en la página de despacho
+                cargarDatosSeguros(); 
             }, 1000);
         })
         .catch(() => alert("Error de conexión al intentar archivar el pedido."));
     }
 }
+
 // ==========================================
 // MÓDULO LOGÍSTICA: GENERADOR DE RÓTULOS (ESCALA 90% POSICIÓN FIJA)
 // ==========================================
@@ -372,35 +333,28 @@ async function imprimirRotuloDoble(linkDrive, event) {
         const { PDFDocument } = window.PDFLib;
         const pdfOriginal = await PDFDocument.load(pdfBytesOriginal);
         
-        // Agarramos la página original INTACTA
         const primeraPagina = pdfOriginal.getPages()[0]; 
         const { width: origWidth, height: origHeight } = primeraPagina.getSize();
 
         const pdfNuevo = await PDFDocument.create();
         
-        // Creamos la Hoja A4 Apaisada (Horizontal)
         const anchoHoja = 841.89;
         const altoHoja = 595.28;
         const hojaA4 = pdfNuevo.addPage([anchoHoja, altoHoja]); 
 
         const paginaEmbebida = await pdfNuevo.embedPage(primeraPagina);
 
-        // 📏 TAMAÑO IDEAL (90%)
         const escala = 0.90; 
         const anchoFinal = origWidth * escala;
         const altoFinal = origHeight * escala;
 
-        // 🎯 POSICIONES FIJAS (Sin centrado automático para que no lo empuje el blanco)
-        const margen = 20; // 20 puntos de margen para que la impresora no muerda el borde
+        const margen = 20; 
 
-        // Alineamos las dos etiquetas arriba del todo
         const posY = altoHoja - altoFinal - margen;
 
-        // Uno arranca en la orilla izquierda, el otro arranca justo en la mitad de la hoja
         const posXIzquierda = margen;
         const posXDerecha = (anchoHoja / 2) + margen;
 
-        // 1. ESTAMPAMOS IZQUIERDA
         hojaA4.drawPage(paginaEmbebida, { 
             x: posXIzquierda, 
             y: posY, 
@@ -408,7 +362,6 @@ async function imprimirRotuloDoble(linkDrive, event) {
             height: altoFinal 
         });
 
-        // 2. ESTAMPAMOS DERECHA
         hojaA4.drawPage(paginaEmbebida, { 
             x: posXDerecha, 
             y: posY, 
