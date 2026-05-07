@@ -6,26 +6,75 @@
     <title>Monitor de Planta - Áurea</title>
     <link rel="stylesheet" href="estilos.css">
     <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        /* Reglas especiales para cuando tocas "Imprimir Lista" */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .header-sistema,
+            #dashboard-live-aurea,
+            #contenedor-buscador-aurea,
+            #cargando,
+            button {
+                display: none !important;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th,
+            td {
+                border: 1px solid #ddd !important;
+                padding: 10px !important;
+                text-align: left;
+            }
+
+            /* Apagamos las animaciones para la impresión */
+            .anim-oficina,
+            .anim-fabrica,
+            .anim-despacho {
+                animation: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="header-sistema">
         <img src="logo aurea.png" alt="Áurea Deco">
     </div>
-    <h2>📊 Estado de Producción en Tiempo Real</h2>
+
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <h2>📊 Estado de Producción en Tiempo Real</h2>
+        <button onclick="window.print()"
+            style="background:#1a1a1a; color:#d4af37; padding:10px 20px; border-radius:6px; font-weight:900; cursor:pointer; border:none; box-shadow:0 3px 6px rgba(0,0,0,0.1);">🖨️
+            IMPRIMIR LISTA</button>
+    </div>
+
     <div id="cargando">Conectando...</div>
-    <table class="aurea-table" id="tabla-pedidos" style="display:none;">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>CLIENTE</th>
-                <th>PEDIDO</th>
-                <th>ETAPA</th>
-                <th>TIEMPO</th>
-            </tr>
-        </thead>
-        <tbody id="cuerpo-tabla"></tbody>
-    </table>
+
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <table class="aurea-table" id="tabla-pedidos" style="display:none; width: 100%;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>FECHA</th>
+                    <th>CLIENTE</th>
+                    <th>PEDIDO</th>
+                    <th>ETAPA</th>
+                    <th>TIEMPO</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla"></tbody>
+        </table>
+    </div>
+
     <script src="tablero.js"></script>
 </body>
 

@@ -27,35 +27,19 @@ let pedidosGlobales = [];
 
 // CALENDARIO DE FERIADOS ARGENTINOS (Fijos y estimativos)
 const feriados = [
-    "01-01", // Año Nuevo
-    "02-16", // Carnaval (Ejemplo)
-    "02-17", // Carnaval (Ejemplo)
-    "03-24", // Día de la Memoria
-    "04-02", // Malvinas
-    "04-03", // Viernes Santo
-    "05-01", // Día del Trabajador
-    "05-25", // Revolución de Mayo
-    "06-17", // Güemes
-    "06-20", // Día de la Bandera
-    "07-09", // Día de la Independencia
-    "08-17", // San Martín
-    "10-12", // Diversidad Cultural
-    "11-20", // Soberanía Nacional
-    "12-08", // Inmaculada Concepción
-    "12-25"  // Navidad
+    "01-01", "02-16", "02-17", "03-24", "04-02", "04-03", "05-01", "05-25", 
+    "06-17", "06-20", "07-09", "08-17", "10-12", "11-20", "12-08", "12-25" 
 ];
+
 // ==========================================
 // CÁLCULO DE TIEMPO Y SEMÁFORO
 // ==========================================
-// Ahora recibe la fecha Y el estado del pedido
 function calcularSemaforo(fechaCruda, estadoActual) {
     if (!fechaCruda) return "<span style='color:#999; font-size:11px;'>Sin fecha</span>";
     
-    // Si ya está despachado o terminado, cortamos el reloj acá nomás
     if (estadoActual && (estadoActual.toLowerCase().includes("despacho") || estadoActual.toLowerCase().includes("entregado") || estadoActual.toLowerCase().includes("finalizado"))) {
         return `
             <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-family:'Montserrat', sans-serif;">
-                <span style="font-size:11px; font-weight:600; color:#888;">Proceso terminado</span>
                 <span style="background:#17a2b8; color:white; padding:3px 7px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">
                     ✅ DESPACHADO
                 </span>
@@ -72,7 +56,6 @@ function calcularSemaforo(fechaCruda, estadoActual) {
         
         while (temp < hoy) {
             temp.setDate(temp.getDate() + 1);
-            
             let mes = String(temp.getMonth() + 1).padStart(2, '0');
             let dia = String(temp.getDate()).padStart(2, '0');
             let diaMes = `${mes}-${dia}`;
@@ -80,20 +63,15 @@ function calcularSemaforo(fechaCruda, estadoActual) {
             let esFinde = temp.getDay() === 0 || temp.getDay() === 6;
             let esFeriado = feriados.includes(diaMes);
 
-            if (!esFinde && !esFeriado) { 
-                diasTranscurridos++;
-            }
+            if (!esFinde && !esFeriado) { diasTranscurridos++; }
         }
 
         let colorFondo = "#28a745"; let colorTexto = "white"; let estadoTiempo = "A Tiempo";
-        
         if (diasTranscurridos >= 7) { colorFondo = "#dc3545"; estadoTiempo = "Demorado"; } 
         else if (diasTranscurridos >= 5) { colorFondo = "#ffc107"; colorTexto = "#333"; estadoTiempo = "Atención"; }
 
-        const fechaFormateada = fechaIngreso.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
         return `
             <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-family:'Montserrat', sans-serif;">
-                <span style="font-size:11px; font-weight:600; color:#888;">Ingresó el ${fechaFormateada}</span>
                 <span style="background:${colorFondo}; color:${colorTexto}; padding:3px 7px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">
                     ⏳ ${diasTranscurridos} DÍAS HÁBILES - ${estadoTiempo.toUpperCase()}
                 </span>
@@ -171,7 +149,6 @@ function armarBuscador() {
 }
 
 function filtrarYRenderizarTabla() {
-    // Si no hay pedidos cargados todavía, no hacemos nada
     if (!pedidosGlobales || pedidosGlobales.length === 0) return;
 
     const inputBuscador = document.getElementById("input-buscador-aurea");
@@ -180,10 +157,8 @@ function filtrarYRenderizarTabla() {
     let pedidosAMostrar = [];
 
     if (termino === "") {
-        // Filtramos para NO mostrar los que ya se entregaron (así la lista es cortita)
         pedidosAMostrar = pedidosGlobales.filter(p => p.estado && p.estado !== "Entregado");
     } else {
-        // Buscador que no se tilda si un nombre o ID está vacío
         pedidosAMostrar = pedidosGlobales.filter(p => {
             const nom = p.nombre ? p.nombre.toLowerCase() : "";
             const identificador = p.id ? p.id.toLowerCase() : "";
@@ -203,7 +178,7 @@ function renderizarTablaHTML(pedidos) {
     tbody.innerHTML = "";
 
     if (pedidos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: #666; font-weight: bold; background:white; border-radius:8px;">🔍 No se encontraron resultados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color: #666; font-weight: bold; background:white; border-radius:8px;">🔍 No se encontraron resultados.</td></tr>`;
         return;
     }
 
@@ -221,11 +196,16 @@ function renderizarTablaHTML(pedidos) {
             zonaPlanta = `<span class="anim-despacho">📦</span> DESPACHO`; colorBg = "#d4edda"; colorTxt = "#155724"; 
         }
 
-        let textoProgreso = p.progreso && p.progreso.trim() !== "" ? p.progreso.replace(/,/g, " ✔️<br>") + " ✔️" : "Esperando inicio...";
+        // LIMPIEZA DE FECHA PARA MOSTRAR:
+        const fechaObj = new Date(p.fecha);
+        const fechaLimpia = isNaN(fechaObj) ? "S/D" : fechaObj.toLocaleDateString('es-AR');
 
         tbody.innerHTML += `
             <tr onclick="abrirDetalle('${p.id}', '${zonaPlanta.replace(/"/g, '&quot;')}', '${colorBg}', '${colorTxt}')">
                 <td style="font-weight:900; color:#b0b0b0; vertical-align: top; padding:15px; text-align:center; font-size:11px;">${p.id}</td>
+                
+                <td style="font-weight:700; color:#555; vertical-align: top; padding:15px; font-size:12px;">${fechaLimpia}</td>
+                
                 <td style="vertical-align: top; padding:15px;">
                     <strong>${p.nombre}</strong><br>
                     <small style="font-size:11px; color:#777; font-family:monospace; background:#eee; padding:1px 4px; border-radius:3px;">${p.textos}</small>
@@ -254,6 +234,14 @@ function cargarTablero() {
     const urlFresca = urlAppsScript + "?t=" + new Date().getTime();
     
     fetch(urlFresca).then(res => res.json()).then(datos => {
+        
+        // 🔄 ORDEN AUTOMÁTICO POR LLEGADA (IDs más viejos primero)
+        datos.sort((a, b) => {
+            let idA = parseInt(a.id.replace(/\D/g, '')) || 0;
+            let idB = parseInt(b.id.replace(/\D/g, '')) || 0;
+            return idA - idB; 
+        });
+
         pedidosGlobales = datos;
         
         const loading = document.getElementById("cargando");
@@ -261,14 +249,9 @@ function cargarTablero() {
         if(loading) loading.style.display = "none";
         if(tabla) tabla.style.display = "table";
 
-        // Solo armamos el dashboard superior contando los activos
         const pedidosActivos = datos.filter(p => p.estado !== "Entregado");
         armarDashboardLive(pedidosActivos);
-        
-        // Inyectamos el buscador si no existe
         armarBuscador();
-
-        // Mandamos a filtrar (esto detecta si hay texto escrito o no, y dibuja la tabla correcta)
         filtrarYRenderizarTabla();
     });
 }
@@ -290,7 +273,6 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
 
     const zonaLimpia = zonaTraducida.replace(/<[^>]*>?/gm, '').trim();
     
-
     modalOverlay.innerHTML = `
         <div id="modal-ventana-aurea" style="background: rgba(255, 252, 245, 0.90); border: 1px solid rgba(255,255,255,0.5); width:100%; max-width:750px; max-height:90vh; overflow-y:auto; border-radius:12px; padding:35px; box-shadow:0 15px 35px rgba(0,0,0,0.2); position:relative; font-family:'Montserrat', sans-serif;">
             <button onclick="cerrarDetalle()" style="position:absolute; top:20px; right:20px; background:white; color:#333; border:1px solid #ddd; border-radius:50%; width:35px; height:35px; font-size:18px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); transition:0.2s;" onmouseover="this.style.background='#dc3545'; this.style.color='white';">×</button>
@@ -320,7 +302,6 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
                 </div>
             </div>
             
-            
             <div style="margin-top:20px; background:rgba(248, 249, 250, 0.8); padding:15px; border-radius:8px; border-left:5px solid ${colorTxt};">
                 <p style="margin:5px 0; font-size:14px;"><strong>ZONA DE PLANTA:</strong> <span style="background:${colorBg}; color:${colorTxt}; padding:3px 8px; border-radius:4px; font-weight:bold;">${zonaLimpia}</span></p>
                 <p style="margin:5px 0; font-size:14px; color:#666;"><strong>Paso Interno:</strong> ${p.estado}</p>
@@ -329,26 +310,19 @@ function abrirDetalle(idBuscado, zonaTraducida, colorBg, colorTxt) {
             </div>
 
           <div style="margin-top:25px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
-                
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button onclick="editarPedido('${p.id}')" style="background:#ffc107; color:#1a1a1a; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer;">✏️ EDITAR</button>
-                    
                     <button onclick="borrarPedido('${p.id}')" style="background:#dc3545; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.1); border:none; cursor:pointer;">🗑️ ELIMINAR</button>
-
                     <button onclick="marcarEntregado('${p.id}')" style="background:#20c997; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.2); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">📦 MARCAR COMO ENTREGADO</button>
                 </div>
-
                 <div style="display:flex; gap:10px;">
                     <button onclick="imprimirFicha('${p.id}')" style="background:#1a1a1a; color:#d4af37; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:900; box-shadow:0 3px 6px rgba(0,0,0,0.2); border:none; cursor:pointer; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">🖨️ IMPRIMIR FICHA</button>
-                    
                     ${p.linkPdf ? `<a href="${p.linkPdf}" target="_blank" style="background:#6c757d; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">📄 PDF</a>` : ''}
                     ${p.linkDxf ? `<a href="${p.linkDxf}" target="_blank" style="background:#007bff; color:white; padding:10px 15px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold; box-shadow:0 3px 6px rgba(0,0,0,0.1);">⚙️ DXF</a>` : ''}
                 </div>
             </div>
-
         </div>
     `;
-    // ... (sigue el código para mostrar el modal) ...
     modalOverlay.style.display = "flex";
     document.body.style.overflow = "hidden"; 
     setTimeout(() => { modalOverlay.classList.add("mostrar"); }, 10);
@@ -361,6 +335,7 @@ function cerrarDetalle() {
         setTimeout(() => { modalOverlay.style.display = "none"; document.body.style.overflow = "auto"; }, 300);
     }
 }
+
 // ==========================================
 // GENERADOR DE FICHA DE INGRESO (ORDEN DE TRABAJO EXACTA)
 // ==========================================
@@ -368,7 +343,6 @@ function imprimirFicha(idBuscado) {
     const p = pedidosGlobales.find(pedido => pedido.id === idBuscado);
     if (!p) return;
 
-    // Formato de fecha YYYY-MM-DD igual al de tu imagen
     let fechaIngreso = "S/D";
     if(p.fecha) {
         try { 
@@ -377,7 +351,6 @@ function imprimirFicha(idBuscado) {
         } catch(e){}
     }
 
-    // Si el modelo ya dice "OPCIÓN", lo dejamos, sino se lo agregamos
     let textoModelo = 'S/D';
     if(p.modelo) {
         textoModelo = String(p.modelo).toUpperCase().includes('OPCIÓN') ? p.modelo : 'OPCIÓN ' + p.modelo;
@@ -393,43 +366,29 @@ function imprimirFicha(idBuscado) {
             <title>Ficha - ${p.id}</title>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-                
                 body { font-family: 'Montserrat', 'Arial', sans-serif; margin: 0; padding: 40px; color: #000; background: #fff; }
                 .hoja { max-width: 800px; margin: 0 auto; }
-                
-                /* HEADER */
                 .grid-header { display: grid; grid-template-columns: 25% 45% 30%; border: 4px solid #1a1a1a; }
                 .logo-caja { padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-                
-                /* Logo dibujado en CSS para evitar que se rompa al imprimir */
                 .circulo-logo { width: 100px; height: 100px; background: #8c5642; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; margin-bottom: 5px; border: 1px solid #fff; box-shadow: 0 0 0 1px #8c5642;}
                 .circulo-logo .aurea { font-family: 'Georgia', serif; font-size: 24px; margin-bottom: 2px; }
                 .circulo-logo .obj { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; }
                 .logo-texto-abajo { font-size: 10px; font-weight: 900; text-transform: uppercase; margin-top: 5px; }
-                
                 .datos-header { border-left: 4px solid #1a1a1a; border-right: 4px solid #1a1a1a; padding: 20px 25px; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
                 .dato-h { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
                 .dato-h .lbl { font-size: 11px; font-weight: 900; }
                 .dato-h .val-id { font-size: 20px; font-weight: 900; color: #a04000; } 
                 .dato-h .val-fec { font-size: 16px; font-weight: 900; }
-                
                 .titulo-header { background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; text-align: center; line-height: 1.2; padding: 20px; }
-
-                /* TITULOS SECCION */
                 .titulo-seccion { background: #1a1a1a; color: #fff; padding: 8px 15px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid #1a1a1a; border-right: 4px solid #1a1a1a; margin-top: -4px;}
-
-                /* SECCION CLIENTE */
                 .seccion-cliente { border: 4px solid #1a1a1a; border-top: none; }
                 .fila { border-bottom: 1px solid #666; padding: 10px 15px; display: flex; align-items: baseline; }
                 .fila:last-child { border-bottom: none; }
                 .fila.split { display: grid; grid-template-columns: 1fr 1fr; padding: 0; }
                 .split > div { padding: 10px 15px; display: flex; align-items: baseline; }
                 .split > div:first-child { border-right: 1px solid #666; }
-                
                 .lbl { font-size: 11px; font-weight: 900; margin-right: 10px; flex-shrink: 0; text-transform: uppercase; }
                 .val { font-size: 15px; font-weight: 900; text-transform: uppercase; }
-
-                /* FOOTER GRID (Carteleria + Montos) */
                 .grid-footer { display: grid; grid-template-columns: 60% 40%; border: 4px solid #1a1a1a; border-top: none; }
                 .col-izq { border-right: 4px solid #1a1a1a; }
                 .fila-cart { border-bottom: 1px solid #666; padding: 10px 15px; display: flex; align-items: baseline; }
@@ -437,7 +396,6 @@ function imprimirFicha(idBuscado) {
                 .caja-texto { padding: 15px; }
                 .caja-texto .lbl { margin-bottom: 15px; display: block; font-size: 12px;}
                 .caja-texto .val-texto { font-size: 24px; font-family: monospace; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-                
                 .col-der { display: flex; flex-direction: column; }
                 .caja-der { border-bottom: 4px solid #1a1a1a; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
                 .caja-der:last-child { border-bottom: none; background: #f4f6f9; }
@@ -445,7 +403,6 @@ function imprimirFicha(idBuscado) {
                 .val-monto { font-size: 26px; font-weight: 900; }
                 .val-modelo { font-size: 28px; font-weight: 900; color: #007bff; text-transform: uppercase; }
                 .val-seg { font-size: 16px; font-weight: 900; color: #0056b3; }
-                
                 @media print {
                     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
                     .hoja { margin: 0; }
@@ -463,104 +420,41 @@ function imprimirFicha(idBuscado) {
                         <div class="logo-texto-abajo">objetos de diseño</div>
                     </div>
                     <div class="datos-header">
-                        <div class="dato-h">
-                            <span class="lbl">ID PEDIDO:</span>
-                            <span class="val-id">${p.id}</span>
-                        </div>
-                        <div class="dato-h">
-                            <span class="lbl">FECHA DE INGRESO:</span>
-                            <span class="val-fec">${fechaIngreso}</span>
-                        </div>
+                        <div class="dato-h"><span class="lbl">ID PEDIDO:</span><span class="val-id">${p.id}</span></div>
+                        <div class="dato-h"><span class="lbl">FECHA DE INGRESO:</span><span class="val-fec">${fechaIngreso}</span></div>
                     </div>
-                    <div class="titulo-header">
-                        FICHA DE<br>PEDIDO
-                    </div>
+                    <div class="titulo-header">FICHA DE<br>PEDIDO</div>
                 </div>
-
                 <div class="titulo-seccion">DATOS DEL CLIENTE</div>
                 <div class="seccion-cliente">
-                    <div class="fila">
-                        <span class="lbl">NOMBRE Y APELLIDO:</span>
-                        <span class="val">${p.nombre}</span>
-                    </div>
-                    <div class="fila">
-                        <span class="lbl">PROVINCIA:</span>
-                        <span class="val">${p.provincia}</span>
-                    </div>
-                    <div class="fila">
-                        <span class="lbl">LOCALIDAD:</span>
-                        <span class="val">${p.localidad}</span>
-                    </div>
-                    <div class="fila">
-                        <span class="lbl">DIRECCIÓN:</span>
-                        <span class="val">${p.direccion}</span>
-                    </div>
-                    <div class="fila">
-                        <span class="lbl">CÓDIGO POSTAL:</span>
-                        <span class="val">${p.cp || ' - '}</span>
-                    </div>
-                    <div class="fila">
-                        <span class="lbl">TELÉFONO:</span>
-                        <span class="val">${p.celular}</span>
-                    </div>
+                    <div class="fila"><span class="lbl">NOMBRE Y APELLIDO:</span><span class="val">${p.nombre}</span></div>
+                    <div class="fila"><span class="lbl">PROVINCIA:</span><span class="val">${p.provincia}</span></div>
+                    <div class="fila"><span class="lbl">LOCALIDAD:</span><span class="val">${p.localidad}</span></div>
+                    <div class="fila"><span class="lbl">DIRECCIÓN:</span><span class="val">${p.direccion}</span></div>
+                    <div class="fila"><span class="lbl">CÓDIGO POSTAL:</span><span class="val">${p.cp || ' - '}</span></div>
+                    <div class="fila"><span class="lbl">TELÉFONO:</span><span class="val">${p.celular}</span></div>
                     <div class="fila split">
-                        <div>
-                            <span class="lbl">DNI / CUIT:</span>
-                            <span class="val">${p.dni || ' - '}</span>
-                        </div>
-                        <div>
-                            <span class="lbl" style="width: 50px;">ENVÍO:</span>
-                            <span class="val">${p.tipoEnvio || ' - '}</span>
-                        </div>
+                        <div><span class="lbl">DNI / CUIT:</span><span class="val">${p.dni || ' - '}</span></div>
+                        <div><span class="lbl" style="width: 50px;">ENVÍO:</span><span class="val">${p.tipoEnvio || ' - '}</span></div>
                     </div>
                 </div>
-
                 <div class="titulo-seccion">CARTELERÍA</div>
                 <div class="grid-footer">
                     <div class="col-izq">
-                        <div class="fila-cart">
-                            <span class="lbl">POSICIÓN:</span>
-                            <span class="val">${p.posicion || ' - '}</span>
-                        </div>
-                        <div class="fila-cart">
-                            <span class="lbl">MEDIDAS:</span>
-                            <span class="val">${p.medida}</span>
-                        </div>
-                        <div class="fila-cart">
-                            <span class="lbl">FONDO:</span>
-                            <span class="val">${p.fondo}</span>
-                        </div>
-                        <div class="fila-cart">
-                            <span class="lbl">FRENTE:</span>
-                            <span class="val">${p.frente}</span>
-                        </div>
-                        <div class="caja-texto">
-                            <span class="lbl">DATOS / TEXTO:</span>
-                            <div class="val-texto">${p.textos.replace(/\n/g, '<br>')}</div>
-                        </div>
+                        <div class="fila-cart"><span class="lbl">POSICIÓN:</span><span class="val">${p.posicion || ' - '}</span></div>
+                        <div class="fila-cart"><span class="lbl">MEDIDAS:</span><span class="val">${p.medida}</span></div>
+                        <div class="fila-cart"><span class="lbl">FONDO:</span><span class="val">${p.fondo}</span></div>
+                        <div class="fila-cart"><span class="lbl">FRENTE:</span><span class="val">${p.frente}</span></div>
+                        <div class="caja-texto"><span class="lbl">DATOS / TEXTO:</span><div class="val-texto">${p.textos.replace(/\n/g, '<br>')}</div></div>
                     </div>
-                    
                     <div class="col-der">
-                        <div class="caja-der">
-                            <div class="lbl-der">MONTO A FACTURAR</div>
-                            <div class="val-monto">${p.monto && p.monto !== "" ? '$' + p.monto : 'S/D'}</div>
-                        </div>
-                        <div class="caja-der">
-                            <div class="lbl-der">MODELO CONFIRMADO</div>
-                            <div class="val-modelo">${textoModelo}</div>
-                        </div>
-                        <div class="caja-der">
-                            <div class="lbl-der">SEGUIMIENTO DE ENVÍO</div>
-                            <div class="val-seg">Sin Seguimiento</div>
-                        </div>
+                        <div class="caja-der"><div class="lbl-der">MONTO A FACTURAR</div><div class="val-monto">${p.monto && p.monto !== "" ? '$' + p.monto : 'S/D'}</div></div>
+                        <div class="caja-der"><div class="lbl-der">MODELO CONFIRMADO</div><div class="val-modelo">${textoModelo}</div></div>
+                        <div class="caja-der"><div class="lbl-der">SEGUIMIENTO DE ENVÍO</div><div class="val-seg">Sin Seguimiento</div></div>
                     </div>
                 </div>
             </div>
-            
-            <script>
-                // Dispara impresión apenas termina de "dibujar" el HTML
-                window.onload = function() { window.print(); }
-            </script>
+            <script>window.onload = function() { window.print(); }</script>
         </body>
         </html>
     `;
@@ -568,34 +462,19 @@ function imprimirFicha(idBuscado) {
     ventana.document.write(plantilla);
     ventana.document.close();
 }
-// ==========================================
-// MÓDULO DE ADMINISTRACIÓN (V3 FINAL)
-// ==========================================
 
 function borrarPedido(idPedido) {
     if (confirm(`⚠️ Vas a ELIMINAR el pedido ${idPedido}.\n\n¿Estás seguro?`)) {
         cerrarDetalle();
-        
-        fetch(urlAppsScript, {
-            method: 'POST',
-            body: JSON.stringify({ accion: "borrar", id: idPedido })
-        })
-        .then(() => {
-            // Recarga obligatoria para limpiar la tabla
-            setTimeout(() => {
-                alert("✅ Pedido eliminado.");
-                cargarTablero(); 
-            }, 1000);
-        })
-        .catch(() => alert("Error: Revisá que tu Apps Script esté en 'Cualquier Persona'"));
+        fetch(urlAppsScript, { method: 'POST', body: JSON.stringify({ accion: "borrar", id: idPedido }) })
+        .then(() => { setTimeout(() => { alert("✅ Pedido eliminado."); cargarTablero(); }, 1000); })
+        .catch(() => alert("Error al borrar."));
     }
 }
 
-// Abre la ventana de edición (La interfaz queda igual)
 function editarPedido(idBuscado) {
     const p = pedidosGlobales.find(pedido => pedido.id === idBuscado);
     if (!p) return;
-
     cerrarDetalle();
 
     let modalOverlay = document.getElementById("modal-edicion-aurea");
@@ -634,15 +513,12 @@ function editarPedido(idBuscado) {
     modalOverlay.style.display = "flex";
 }
 
-// Dispara el guardado
 function guardarEdicion(idBuscado) {
     document.getElementById("modal-edicion-aurea").style.display = "none";
-    
     fetch(urlAppsScript, {
         method: 'POST',
         body: JSON.stringify({
-            accion: "editar",
-            id: idBuscado,
+            accion: "editar", id: idBuscado,
             datos: {
                 nombre: document.getElementById("edit-nombre").value,
                 celular: document.getElementById("edit-celular").value,
@@ -652,33 +528,16 @@ function guardarEdicion(idBuscado) {
             }
         })
     })
-    .then(() => {
-        setTimeout(() => {
-            alert("✅ Pedido actualizado.");
-            cargarTablero(); 
-        }, 1000);
-    })
-    .catch(() => alert("Error: Revisá que tu Apps Script esté en 'Cualquier Persona'"));
+    .then(() => { setTimeout(() => { alert("✅ Pedido actualizado."); cargarTablero(); }, 1000); })
+    .catch(() => alert("Error al editar."));
 }
-// ==========================================
-// MÓDULO LOGÍSTICA: MARCAR ENTREGADO (ARCHIVAR)
-// ==========================================
+
 function marcarEntregado(idPedido) {
     if (confirm(`📦 ¿Confirmás que el pedido ${idPedido} ya fue ENTREGADO al cliente?\n\nEsto lo moverá al Histórico y limpiará la planta.`)) {
         cerrarDetalle();
-        
-        // Fíjate que acá ahora dice accion: "archivar"
-        fetch(urlAppsScript, {
-            method: 'POST',
-            body: JSON.stringify({ accion: "archivar", id: idPedido })
-        })
-        .then(() => {
-            setTimeout(() => {
-                alert("🎉 ¡Excelente! Pedido archivado en el Histórico exitosamente.");
-                cargarTablero(); 
-            }, 1000);
-        })
-        .catch(() => alert("Error de conexión al intentar archivar el pedido."));
+        fetch(urlAppsScript, { method: 'POST', body: JSON.stringify({ accion: "archivar", id: idPedido }) })
+        .then(() => { setTimeout(() => { alert("🎉 ¡Excelente! Pedido archivado."); cargarTablero(); }, 1000); })
+        .catch(() => alert("Error al archivar."));
     }
 }
 document.addEventListener("DOMContentLoaded", cargarTablero);
